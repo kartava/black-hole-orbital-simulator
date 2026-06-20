@@ -1,4 +1,5 @@
 import "./assets/styles.css";
+import "./assets/mobile.css";
 import { buildControls } from "./controls";
 import { render, initializeBackgroundStars } from "./renderer";
 import type { SimulationState } from "./types";
@@ -40,7 +41,11 @@ function resize(): void {
 resize();
 window.addEventListener("resize", resize);
 
+let lastTouchTimestamp = 0;
+
 canvas.addEventListener("click", (event) => {
+  // Skip synthetic click fired by the browser after touchend to avoid double-selecting.
+  if (performance.now() - lastTouchTimestamp < 500) return;
   const boundingRect = canvas.getBoundingClientRect();
   const mouseOffsetX = event.clientX - boundingRect.left - canvas.width / 2;
   const mouseOffsetY = -(event.clientY - boundingRect.top - canvas.height / 2);
@@ -75,10 +80,123 @@ canvas.addEventListener(
   { passive: false },
 );
 
+// Touch: pinch-to-zoom and tap-to-select
+let touchStartX = 0;
+let touchStartY = 0;
+let pinchStartDistance = 0;
+let pinchStartScale = 0;
+let wasPinch = false;
+
+canvas.addEventListener(
+  "touchstart",
+  (event) => {
+    if (event.touches.length === 1) {
+      wasPinch = false;
+      touchStartX = event.touches[0].clientX;
+      touchStartY = event.touches[0].clientY;
+    } else if (event.touches.length === 2) {
+      wasPinch = true;
+      event.preventDefault();
+      pinchStartDistance = Math.hypot(
+        event.touches[0].clientX - event.touches[1].clientX,
+        event.touches[0].clientY - event.touches[1].clientY,
+      );
+      pinchStartScale = state.camera.scale;
+    }
+  },
+  { passive: false },
+);
+
+canvas.addEventListener(
+  "touchmove",
+  (event) => {
+    if (event.touches.length === 2) {
+      event.preventDefault();
+      if (pinchStartDistance === 0) return;
+      const dist = Math.hypot(
+        event.touches[0].clientX - event.touches[1].clientX,
+        event.touches[0].clientY - event.touches[1].clientY,
+      );
+      state.camera.scale = Math.max(
+        5,
+        Math.min(200, pinchStartScale * (dist / pinchStartDistance)),
+      );
+    }
+  },
+  { passive: false },
+);
+
+canvas.addEventListener("touchend", (event) => {
+  if (!wasPinch && event.touches.length === 0 && event.changedTouches.length === 1) {
+    lastTouchTimestamp = performance.now();
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    if (Math.hypot(dx, dy) < 12) {
+      const rect = canvas.getBoundingClientRect();
+      const offsetX = touch.clientX - rect.left - canvas.width / 2;
+      const offsetY = -(touch.clientY - rect.top - canvas.height / 2);
+      const worldX = offsetX / state.camera.scale;
+      const worldY = offsetY / state.camera.scale;
+      let nearest: (typeof state.particles)[number] | null = null;
+      let nearestDist = Infinity;
+      for (const p of state.particles) {
+        if (!p.alive) continue;
+        const d = Math.hypot(p.x - worldX, p.y - worldY);
+        if (d < nearestDist) {
+          nearestDist = d;
+          nearest = p;
+        }
+      }
+      if (nearest && nearestDist < 5) state.selectedParticle = nearest;
+    }
+  }
+  if (event.touches.length === 0) wasPinch = false;
+});
+
 const updateParticleReadouts = buildControls({
   container: controlsElement,
   state,
 });
+
+// Mobile sidebar drawer
+const sidebar = document.getElementById("sidebar")!;
+const controlsFab = document.getElementById("controls-fab")!;
+const sidebarBackdrop = document.getElementById("sidebar-backdrop")!;
+const sidebarClose = document.getElementById("sidebar-close")!;
+
+function openSidebar(): void {
+  document.body.classList.add("controls-open");
+}
+
+function closeSidebar(): void {
+  document.body.classList.remove("controls-open");
+}
+
+controlsFab.addEventListener("click", openSidebar);
+sidebarBackdrop.addEventListener("click", closeSidebar);
+sidebarClose.addEventListener("click", closeSidebar);
+
+// Swipe-down-to-close: listen on the full header for a usable touch target.
+const sidebarHeader = sidebar.querySelector(".sidebar-header") as HTMLElement | null;
+if (sidebarHeader) {
+  let dragStartY = 0;
+  sidebarHeader.addEventListener(
+    "touchstart",
+    (e) => {
+      dragStartY = (e as TouchEvent).touches[0].clientY;
+    },
+    { passive: true },
+  );
+  sidebarHeader.addEventListener(
+    "touchend",
+    (e) => {
+      if ((e as TouchEvent).changedTouches[0].clientY - dragStartY > 50)
+        closeSidebar();
+    },
+    { passive: true },
+  );
+}
 
 function setPaused(paused: boolean): void {
   state.paused = paused;

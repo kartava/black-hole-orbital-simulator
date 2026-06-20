@@ -50,11 +50,13 @@
   </head>
   <body>
     <aside id="sidebar" aria-label="Simulation controls">
+      <div class="drag-handle"></div>
       <div class="sidebar-header">
         <span class="sidebar-title">Black Hole</span>
-        <a href="help.html" target="_blank" rel="noopener" class="help-button"
+        <a href="guide.html" target="_blank" rel="noopener" class="help-button"
           >? Guide</a
         >
+        <button id="sidebar-close" aria-label="Close controls">✕</button>
       </div>
       <div id="controls"></div>
     </aside>
@@ -65,6 +67,8 @@
         aria-label="Black hole orbital mechanics simulation. Particles orbit a central black hole; use the sidebar controls to adjust mass, spin, and add particles."
       ></canvas>
     </main>
+    <button id="controls-fab" aria-label="Open controls">☰</button>
+    <div id="sidebar-backdrop"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

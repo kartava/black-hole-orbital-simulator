@@ -1,0 +1,178 @@
+.drag-handle {
+  display: none;
+  width: 40px;
+  height: 4px;
+  background: rgba(99, 102, 241, 0.5);
+  border-radius: 2px;
+  margin: 10px auto 0;
+  flex-shrink: 0;
+}
+
+#sidebar-close {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-size: 16px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid #374151;
+  color: #9ca3af;
+  cursor: pointer;
+  flex-shrink: 0;
+  min-height: unset;
+}
+#sidebar-close:hover {
+  background: #1f2937;
+  color: #e5e7eb;
+}
+
+#controls-fab {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  left: 20px;
+  z-index: 25;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #1d4ed8;
+  border: 2px solid #3b82f6;
+  color: #eff6ff;
+  font-size: 22px;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.5);
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  min-height: unset;
+}
+#controls-fab:hover {
+  background: #2563eb;
+}
+
+#sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 15;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+canvas {
+  touch-action: none;
+}
+
+@media (max-width: 640px) {
+  body {
+    height: 100dvh;
+  }
+
+  #sidebar {
+    position: fixed;
+    inset: auto 0 0 0;
+    width: 100%;
+    min-width: unset;
+    max-height: 72vh;
+    border-right: none;
+    border-top: none;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.6);
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+    z-index: 20;
+  }
+
+  body.controls-open #sidebar {
+    transform: translateY(0);
+  }
+
+  body.controls-open #sidebar-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  body.controls-open #controls-fab {
+    display: none;
+  }
+
+  #main {
+    height: 100dvh;
+    width: 100%;
+    flex: unset;
+  }
+
+  .drag-handle {
+    display: block;
+  }
+
+  #sidebar-close {
+    display: flex;
+  }
+
+  #controls-fab {
+    display: flex;
+  }
+
+  .sidebar-header {
+    gap: 8px;
+  }
+
+  .sidebar-title {
+    flex: 1;
+  }
+
+  input[type="range"] {
+    height: 36px;
+    cursor: pointer;
+  }
+
+  button {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .presets button {
+    min-height: 36px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  #add-particle-button {
+    min-height: 50px;
+    font-size: 15px;
+  }
+
+  .simulation-actions button {
+    min-height: 44px;
+  }
+
+  label {
+    margin-bottom: 12px;
+    line-height: 2.2;
+  }
+
+  label.checkbox-option {
+    min-height: 36px;
+  }
+
+  label.checkbox-option input {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+
+  .panel {
+    padding: 10px 14px 32px;
+  }
+
+  .presets {
+    gap: 6px;
+  }
+}
