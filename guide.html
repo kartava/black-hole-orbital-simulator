@@ -63,10 +63,11 @@
         margin: 0 auto;
         padding: 28px 0 20px;
         border-bottom: 1px solid #1f2937;
+      }
+      .page-header-nav {
         display: flex;
-        align-items: center;
-        gap: 20px;
-        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 12px;
       }
       .back-link {
         font-size: 13px;
@@ -216,7 +217,10 @@
 
   <body>
     <header class="page-header">
-      <a href="index.html" class="back-link">← Back to simulator</a>
+      <nav class="page-header-nav">
+        <a href="index.html" class="back-link">← Back to simulator</a>
+        <a href="https://github.com/kartava/black-hole-orbital-simulator" target="_blank" rel="noopener" class="back-link">GitHub ↗</a>
+      </nav>
       <h1>Controls &amp; Physics</h1>
     </header>
 
@@ -807,5 +811,10 @@
         </div>
       </section>
     </main>
+    <footer style="text-align:center;padding:24px 0 32px;font-size:12px;color:#6b7280;">
+      <a href="https://github.com/kartava/black-hole-orbital-simulator" target="_blank" rel="noopener" style="color:#a5b4fc;text-decoration:none;">GitHub</a>
+      &nbsp;·&nbsp;
+      <a href="https://kartava.github.io/black-hole-orbital-simulator/" target="_blank" rel="noopener" style="color:#a5b4fc;text-decoration:none;">Live demo</a>
+    </footer>
   </body>
 </html>

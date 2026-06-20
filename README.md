@@ -1,8 +1,10 @@
-# Black Hole Visualizer
+# Black Hole Orbital Simulator
+
+**[Live demo](https://kartava.github.io/black-hole-orbital-simulator/)**
 
 An interactive 2D orbital mechanics simulator based on real General Relativity mathematics. Visualizes test-particle geodesics around Schwarzschild and Kerr (spinning) black holes in the equatorial plane.
 
-![Black Hole Visualizer](public/screen-record.gif)
+![Black Hole Orbital Simulator](public/screen-record.gif)
 
 ## Features
 
