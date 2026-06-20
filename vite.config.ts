@@ -1,0 +1,15 @@
+import { resolve } from "path";
+
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  base: "/black-hole-orbital-simulator/",
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        help: resolve(__dirname, "help.html"),
+      },
+    },
+  },
+});

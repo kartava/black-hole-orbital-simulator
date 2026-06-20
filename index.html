@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Black Hole — Kerr Geodesics</title>
+
+    <meta
+      name="description"
+      content="Interactive GR orbit simulator. Visualize Kerr &amp; Schwarzschild geodesics, ISCO, photon sphere, ergosphere, and gravitational time dilation in your browser."
+    />
+    <meta
+      name="keywords"
+      content="black hole, general relativity, Kerr, Schwarzschild, geodesics, orbital mechanics, ISCO, photon sphere, ergosphere, Boyer-Lindquist, physics simulation"
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Black Hole — Kerr Geodesics Simulator" />
+    <meta
+      property="og:description"
+      content="Interactive browser-based simulation of relativistic orbits around Schwarzschild and Kerr black holes. Solves exact Boyer-Lindquist geodesic equations with RK4 integration."
+    />
+    <meta
+      property="og:url"
+      content="https://kartava.github.io/black-hole-orbital-simulator/"
+    />
+    <meta
+      property="og:image"
+      content="https://kartava.github.io/black-hole-orbital-simulator/screen-record.gif"
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Black Hole — Kerr Geodesics Simulator"
+    />
+    <meta
+      name="twitter:description"
+      content="Interactive browser-based simulation of relativistic orbits around Schwarzschild and Kerr black holes. Solves exact Boyer-Lindquist geodesic equations with RK4 integration."
+    />
+    <meta
+      name="twitter:image"
+      content="https://kartava.github.io/black-hole-orbital-simulator/screen-record.gif"
+    />
+
+    <link
+      rel="canonical"
+      href="https://kartava.github.io/black-hole-orbital-simulator/"
+    />
+  </head>
+  <body>
+    <aside id="sidebar" aria-label="Simulation controls">
+      <div class="sidebar-header">
+        <span class="sidebar-title">Black Hole</span>
+        <a href="help.html" target="_blank" rel="noopener" class="help-button"
+          >? Guide</a
+        >
+      </div>
+      <div id="controls"></div>
+    </aside>
+    <main id="main">
+      <canvas
+        id="canvas"
+        role="img"
+        aria-label="Black hole orbital mechanics simulation. Particles orbit a central black hole; use the sidebar controls to adjust mass, spin, and add particles."
+      ></canvas>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
