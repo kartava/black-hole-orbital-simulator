@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://kartava.github.io/black-hole-orbital-simulator/sitemap.xml
