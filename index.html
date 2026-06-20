@@ -67,7 +67,13 @@
         aria-label="Black hole orbital mechanics simulation. Particles orbit a central black hole; use the sidebar controls to adjust mass, spin, and add particles."
       ></canvas>
     </main>
-    <button id="controls-fab" aria-label="Open controls">☰</button>
+    <button id="controls-fab" aria-label="Open controls">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <rect x="3" y="5.5" width="14" height="1.5" rx="0.75" fill="currentColor" />
+        <rect x="3" y="9.25" width="14" height="1.5" rx="0.75" fill="currentColor" />
+        <rect x="3" y="13" width="14" height="1.5" rx="0.75" fill="currentColor" />
+      </svg>
+    </button>
     <div id="sidebar-backdrop"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

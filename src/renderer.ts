@@ -5,6 +5,15 @@ import {
   blackHoleGeometry,
 } from "./physics";
 import type { Camera, DisplayOptions } from "./types";
+import {
+  PANEL_BG,
+  PANEL_BORDER,
+  TEXT_SECONDARY,
+  COLOR_ERGOSPHERE,
+  COLOR_ISCO_PROGRADE,
+  COLOR_ISCO_RETROGRADE,
+  COLOR_PHOTON_SPHERE,
+} from "./colors";
 
 interface Star {
   x: number;
@@ -133,7 +142,7 @@ export function render(props: {
       centerX,
       centerY,
       ringRadius: ergosphereRadiusValue * scale,
-      ringColor: "#a855f7",
+      ringColor: COLOR_ERGOSPHERE,
       opacity: 0.45,
       dashPattern: [3, 5],
     });
@@ -146,7 +155,7 @@ export function render(props: {
       posX: ergosphereLabelX + 5,
       posY: ergosphereLabelY - 4,
       labelText: "Ergosphere  2M",
-      labelColor: "#a855f7",
+      labelColor: COLOR_ERGOSPHERE,
     });
   }
 
@@ -162,7 +171,7 @@ export function render(props: {
       centerX,
       centerY,
       ringRadius: iscoProgradeRadius * scale,
-      ringColor: "#f59e0b",
+      ringColor: COLOR_ISCO_PROGRADE,
       opacity: 0.45,
       dashPattern: [8, 6],
     });
@@ -172,7 +181,7 @@ export function render(props: {
         centerX,
         centerY,
         ringRadius: iscoRetrogradeRadius * scale,
-        ringColor: "#f97316",
+        ringColor: COLOR_ISCO_RETROGRADE,
         opacity: 0.3,
         dashPattern: [4, 8],
       });
@@ -183,7 +192,7 @@ export function render(props: {
       centerX,
       centerY,
       ringRadius: photonOrbitRadiusValue * scale,
-      ringColor: "#22d3ee",
+      ringColor: COLOR_PHOTON_SPHERE,
       opacity: 0.55,
       dashPattern: [4, 4],
     });
@@ -267,7 +276,7 @@ export function render(props: {
       posX: iscoLabelX + 5,
       posY: iscoLabelY - 4,
       labelText: `ISCO  ${iscoProgradeRadius.toFixed(1)}M`,
-      labelColor: "#f59e0b",
+      labelColor: COLOR_ISCO_PROGRADE,
     });
     if (spin > 0.01) {
       const [retrogradeLabelX, retrogradeLabelY] = toScreenCoordinates(
@@ -279,7 +288,7 @@ export function render(props: {
         posX: retrogradeLabelX + 5,
         posY: retrogradeLabelY - 4,
         labelText: `ISCO⁻  ${iscoRetrogradeRadius.toFixed(1)}M`,
-        labelColor: "#f97316",
+        labelColor: COLOR_ISCO_RETROGRADE,
       });
     }
   }
@@ -293,7 +302,7 @@ export function render(props: {
       posX: photonLabelX + 5,
       posY: photonLabelY - 4,
       labelText: `Photon sphere  ${photonOrbitRadiusValue.toFixed(1)}M`,
-      labelColor: "#22d3ee",
+      labelColor: COLOR_PHOTON_SPHERE,
     });
   }
   const [horizonLabelX, horizonLabelY] = toScreenCoordinates(0, horizonRadius);
@@ -302,7 +311,7 @@ export function render(props: {
     posX: horizonLabelX + 5,
     posY: horizonLabelY - 4,
     labelText: `r₊  ${horizonRadius.toFixed(2)}M`,
-    labelColor: "#9ca3af",
+    labelColor: TEXT_SECONDARY,
   });
 
   // Stack info panels from bottom edge upward
@@ -436,8 +445,8 @@ function drawEffectivePotentialPanel(props: {
   const potentialMin = 0;
   const potentialMax = 1.8;
 
-  context.fillStyle = "rgba(6,7,26,0.88)";
-  context.strokeStyle = "#374151";
+  context.fillStyle = PANEL_BG;
+  context.strokeStyle = PANEL_BORDER;
   context.lineWidth = 1;
   context.beginPath();
   context.roundRect(panelOriginX, panelOriginY, panelWidth, panelHeight, 6);
@@ -540,7 +549,7 @@ function drawEffectivePotentialPanel(props: {
   }
 
   context.font = "10px monospace";
-  context.fillStyle = "#9ca3af";
+  context.fillStyle = TEXT_SECONDARY;
   context.fillText("V²(r)", panelOriginX + 8, panelOriginY + 12);
   context.fillText(
     "r/M →",
@@ -560,8 +569,8 @@ function drawTimeDilationPanel(props: {
   const panelHeight = 100;
   const panelOriginX = canvasWidth - panelWidth - 12;
 
-  context.fillStyle = "rgba(6,7,26,0.88)";
-  context.strokeStyle = "#374151";
+  context.fillStyle = PANEL_BG;
+  context.strokeStyle = PANEL_BORDER;
   context.lineWidth = 1;
   context.beginPath();
   context.roundRect(panelOriginX, panelOriginY, panelWidth, panelHeight, 6);
@@ -569,7 +578,7 @@ function drawTimeDilationPanel(props: {
   context.stroke();
 
   context.font = "10px monospace";
-  context.fillStyle = "#9ca3af";
+  context.fillStyle = TEXT_SECONDARY;
   context.fillText("TIME DILATION", panelOriginX + 8, panelOriginY + 14);
 
   const coordinateTimeValue = particle.coordinateTime;
@@ -602,7 +611,7 @@ function drawTimeDilationPanel(props: {
   );
 
   context.font = "10px monospace";
-  context.fillStyle = "#9ca3af";
+  context.fillStyle = TEXT_SECONDARY;
   context.fillText("Observer  t", barStartX, observerBarY - 3);
   context.fillText(
     `Particle  τ  (dτ/dt = ${properToCoordTimeRatio.toFixed(3)})`,

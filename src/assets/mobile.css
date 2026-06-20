@@ -2,7 +2,7 @@
   display: none;
   width: 40px;
   height: 4px;
-  background: rgba(99, 102, 241, 0.5);
+  background: color-mix(in srgb, var(--accent) 50%, transparent);
   border-radius: 2px;
   margin: 10px auto 0;
   flex-shrink: 0;
@@ -19,14 +19,14 @@
   border-radius: 50%;
   background: transparent;
   border: 1px solid #374151;
-  color: #9ca3af;
+  color: var(--text-secondary);
   cursor: pointer;
   flex-shrink: 0;
   min-height: unset;
 }
 #sidebar-close:hover {
-  background: #1f2937;
-  color: #e5e7eb;
+  background: var(--border-muted);
+  color: var(--text-base);
 }
 
 #controls-fab {
@@ -38,20 +38,19 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: #1d4ed8;
-  border: 2px solid #3b82f6;
-  color: #eff6ff;
-  font-size: 22px;
+  background: var(--bg-btn);
+  border: 2px solid var(--accent);
+  color: var(--text-accent);
   padding: 0;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--accent) 35%, transparent);
   align-items: center;
   justify-content: center;
   transition: background 0.15s;
   min-height: unset;
 }
 #controls-fab:hover {
-  background: #2563eb;
+  background: var(--bg-btn-hover);
 }
 
 #sidebar-backdrop {
