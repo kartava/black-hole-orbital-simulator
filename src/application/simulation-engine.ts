@@ -3,9 +3,11 @@ import { coordinateTimeRate } from "../domain/orbit";
 import { outerEventHorizonRadius } from "../domain/black-hole";
 import { ParticleStatus } from "../domain/particle";
 import type { Particle, TrailPoint } from "../domain/particle";
-import type { Camera, DisplayOptions, SpawnState } from "../types";
 import type { StateVector } from "../domain/types";
 
+// Physics/session state only. Presentation concerns (camera, display toggles,
+// the particle-spawn form) live in ViewState — see src/types.ts — so the
+// application layer never imports UI types.
 export interface SimulationState {
   readonly particles: readonly Particle[];
   readonly selectedParticleId: string | null;
@@ -13,9 +15,6 @@ export interface SimulationState {
   readonly simulationSpeed: number;
   readonly solarMasses: number;
   readonly spin: number;
-  readonly camera: Camera;
-  readonly spawn: SpawnState;
-  readonly options: DisplayOptions;
 }
 
 const PROPER_TIME_STEP = 0.04;
@@ -23,14 +22,20 @@ const TRAIL_MAX_LENGTH = 800;
 const ESCAPE_RADIUS = 600;
 
 export class SimulationEngine {
+  // Carries the fractional substep left over between frames so simulated time
+  // advances at a rate independent of the display's frame rate — no rounding
+  // drift, no forced minimum of one substep per frame.
+  private substepAccumulator = 0;
+
   constructor(private readonly integrator: PhysicsIntegrator) {}
 
   step(props: { state: SimulationState; deltaTime: number }): SimulationState {
     const { state, deltaTime } = props;
-    const integrationSteps = Math.max(
-      1,
-      Math.round(state.simulationSpeed * deltaTime * 60),
-    );
+    this.substepAccumulator += state.simulationSpeed * deltaTime * 60;
+    const integrationSteps = Math.floor(this.substepAccumulator);
+    this.substepAccumulator -= integrationSteps;
+    if (integrationSteps === 0) return state;
+
     const particles = state.particles.map((particle) =>
       this.stepParticle({
         particle: particle,
@@ -51,7 +56,18 @@ export class SimulationEngine {
     let stateVector: StateVector = [...particle.stateVector] as StateVector;
     let properTime = particle.properTime;
     let coordinateTime = particle.coordinateTime;
-    const trail: TrailPoint[] = [...particle.trail];
+    const newTrailPoints: TrailPoint[] = [];
+
+    // Rebuild the trail once per frame (O(n)) rather than shift()-ing each
+    // substep (O(n) per substep). Returns the original array untouched when no
+    // new points were produced.
+    const buildTrail = (): readonly TrailPoint[] => {
+      if (newTrailPoints.length === 0) return particle.trail;
+      const combined = [...particle.trail, ...newTrailPoints];
+      return combined.length > TRAIL_MAX_LENGTH
+        ? combined.slice(combined.length - TRAIL_MAX_LENGTH)
+        : combined;
+    };
 
     for (let step = 0; step < integrationSubsteps; step++) {
       const nextState = this.integrator.integrate({
@@ -67,7 +83,7 @@ export class SimulationEngine {
         return {
           ...particle,
           stateVector: stateVector,
-          trail: trail,
+          trail: buildTrail(),
           properTime: properTime,
           coordinateTime: coordinateTime,
           status: ParticleStatus.CAPTURED,
@@ -77,7 +93,7 @@ export class SimulationEngine {
         return {
           ...particle,
           stateVector: stateVector,
-          trail: trail,
+          trail: buildTrail(),
           properTime: properTime,
           coordinateTime: coordinateTime,
           status: ParticleStatus.ESCAPED,
@@ -94,24 +110,23 @@ export class SimulationEngine {
           spin: particle.spin,
         }) * PROPER_TIME_STEP;
 
-      trail.push({
+      newTrailPoints.push({
         x: radius * Math.cos(azimuthalAngle),
         y: radius * Math.sin(azimuthalAngle),
       });
-      if (trail.length > TRAIL_MAX_LENGTH) trail.shift();
     }
 
     return {
       ...particle,
       stateVector: stateVector,
-      trail: trail,
+      trail: buildTrail(),
       properTime: properTime,
       coordinateTime: coordinateTime,
     };
   }
 }
 
-export function createInitialState(): SimulationState {
+export function createInitialSimulationState(): SimulationState {
   return {
     particles: [],
     selectedParticleId: null,
@@ -119,14 +134,5 @@ export function createInitialState(): SimulationState {
     simulationSpeed: 8,
     solarMasses: 10,
     spin: 0,
-    camera: { scale: 28 },
-    spawn: { initialRadius: 10, angularMomentum: 3.46, radialVelocity: 0 },
-    options: {
-      showISCO: true,
-      showPhotonSphere: true,
-      showEffectivePotential: true,
-      showTimeDilationPanel: true,
-      showTidalStretching: false,
-    },
   };
 }
