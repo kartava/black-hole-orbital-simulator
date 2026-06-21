@@ -3,3 +3,7 @@ dist/
 .DS_Store
 
 .idea
+
+playwright-report/
+tests/screenshots/
+test-results/
