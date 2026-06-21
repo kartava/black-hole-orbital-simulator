@@ -2,32 +2,35 @@ import "./assets/styles.css";
 import "./assets/mobile.css";
 import {
   SimulationEngine,
-  createInitialState,
+  createInitialSimulationState,
 } from "./application/simulation-engine";
 import { Rk4Integrator } from "./infrastructure/rk4-integrator";
-import {
-  render,
-  initializeBackgroundStars,
-} from "./infrastructure/renderer/canvas-renderer";
+import { createRenderer } from "./infrastructure/renderer/canvas-renderer";
 import { buildControls } from "./infrastructure/controls-ui";
 import { buildInputAdapter } from "./infrastructure/input-adapter";
+import { createInitialViewState } from "./types";
+import { requireElement } from "./dom";
 
-const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-const context = canvas.getContext("2d")!;
-const controlsElement = document.getElementById("controls")!;
-const mainElement = document.getElementById("main")!;
+const canvas = requireElement<HTMLCanvasElement>("canvas");
+const canvasContext = canvas.getContext("2d");
+if (!canvasContext) throw new Error("2D canvas context unavailable");
+const context: CanvasRenderingContext2D = canvasContext;
+const controlsElement = requireElement("controls");
+const mainElement = requireElement("main");
 
 const engine = new SimulationEngine(new Rk4Integrator());
-let state = createInitialState();
+const renderer = createRenderer();
+let simulationState = createInitialSimulationState();
+let viewState = createInitialViewState();
 
 function resize(): void {
   canvas.width = mainElement.offsetWidth;
   canvas.height = mainElement.offsetHeight;
-  state = {
-    ...state,
+  viewState = {
+    ...viewState,
     camera: { scale: Math.min(canvas.width, canvas.height) / 48 },
   };
-  initializeBackgroundStars({
+  renderer.resize({
     canvasWidth: canvas.width,
     canvasHeight: canvas.height,
   });
@@ -38,31 +41,39 @@ window.addEventListener("resize", resize);
 
 const updateParticleReadouts = buildControls({
   container: controlsElement,
-  getState: () => state,
-  setState: (newState) => {
-    state = newState;
+  getSimulationState: () => simulationState,
+  setSimulationState: (newState) => {
+    simulationState = newState;
+  },
+  getViewState: () => viewState,
+  setViewState: (newState) => {
+    viewState = newState;
   },
 });
 
 function setPaused(paused: boolean): void {
-  state = { ...state, paused: paused };
+  simulationState = { ...simulationState, paused: paused };
   const pauseButton = document.getElementById("pause-button");
   if (pauseButton) pauseButton.textContent = paused ? "Resume" : "Pause";
 }
 
 buildInputAdapter({
   canvas: canvas,
-  getState: () => state,
-  setState: (newState) => {
-    state = newState;
+  getSimulationState: () => simulationState,
+  setSimulationState: (newState) => {
+    simulationState = newState;
+  },
+  getViewState: () => viewState,
+  setViewState: (newState) => {
+    viewState = newState;
   },
   setPaused: setPaused,
 });
 
-const sidebar = document.getElementById("sidebar")!;
-const controlsFab = document.getElementById("controls-fab")!;
-const sidebarBackdrop = document.getElementById("sidebar-backdrop")!;
-const sidebarClose = document.getElementById("sidebar-close")!;
+const sidebar = requireElement("sidebar");
+const controlsFab = requireElement("controls-fab");
+const sidebarBackdrop = requireElement("sidebar-backdrop");
+const sidebarClose = requireElement("sidebar-close");
 
 function openSidebar(): void {
   document.body.classList.add("controls-open");
@@ -116,24 +127,27 @@ function animationLoop(currentTimestamp: number): void {
   );
   lastFrameTimestamp = currentTimestamp;
 
-  if (!state.paused) {
-    state = engine.step({ state: state, deltaTime: elapsedSeconds });
+  if (!simulationState.paused) {
+    simulationState = engine.step({
+      state: simulationState,
+      deltaTime: elapsedSeconds,
+    });
   }
 
   const selectedParticle =
-    state.selectedParticleId !== null
-      ? (state.particles.find(
-          (particle) => particle.id === state.selectedParticleId,
+    simulationState.selectedParticleId !== null
+      ? (simulationState.particles.find(
+          (particle) => particle.id === simulationState.selectedParticleId,
         ) ?? null)
       : null;
 
-  render({
+  renderer.render({
     context: context,
     canvas: canvas,
-    particles: state.particles,
-    camera: state.camera,
-    options: state.options,
-    spin: state.spin,
+    particles: simulationState.particles,
+    camera: viewState.camera,
+    options: viewState.options,
+    spin: simulationState.spin,
     selectedParticle: selectedParticle,
   });
   updateParticleReadouts();

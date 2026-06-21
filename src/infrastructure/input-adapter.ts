@@ -1,6 +1,11 @@
 import { ParticleStatus, particleX, particleY } from "../domain/particle";
 import type { Particle } from "../domain/particle";
 import type { SimulationState } from "../application/simulation-engine";
+import type { ViewState } from "../types";
+import { screenToWorld } from "../camera";
+
+const MIN_CAMERA_SCALE = 5;
+const MAX_CAMERA_SCALE = 200;
 
 function findNearestParticle(props: {
   particles: readonly Particle[];
@@ -29,11 +34,20 @@ function findNearestParticle(props: {
 
 export function buildInputAdapter(props: {
   canvas: HTMLCanvasElement;
-  getState: () => SimulationState;
-  setState: (newState: SimulationState) => void;
+  getSimulationState: () => SimulationState;
+  setSimulationState: (newState: SimulationState) => void;
+  getViewState: () => ViewState;
+  setViewState: (newState: ViewState) => void;
   setPaused: (paused: boolean) => void;
 }): void {
-  const { canvas, getState, setState, setPaused } = props;
+  const {
+    canvas,
+    getSimulationState,
+    setSimulationState,
+    getViewState,
+    setViewState,
+    setPaused,
+  } = props;
 
   let lastTouchTimestamp = 0;
   let touchStartX = 0;
@@ -42,35 +56,55 @@ export function buildInputAdapter(props: {
   let pinchStartScale = 0;
   let wasPinch = false;
 
+  const clampScale = (scale: number): number =>
+    Math.max(MIN_CAMERA_SCALE, Math.min(MAX_CAMERA_SCALE, scale));
+
+  const setCameraScale = (scale: number): void => {
+    const viewState = getViewState();
+    setViewState({ ...viewState, camera: { scale: clampScale(scale) } });
+  };
+
+  const selectParticleAt = (props: {
+    clientX: number;
+    clientY: number;
+    selectionRadius: number;
+  }): void => {
+    const { clientX, clientY, selectionRadius } = props;
+    const simulationState = getSimulationState();
+    const boundingRect = canvas.getBoundingClientRect();
+    const { worldX, worldY } = screenToWorld({
+      screenX: clientX - boundingRect.left,
+      screenY: clientY - boundingRect.top,
+      canvasWidth: canvas.width,
+      canvasHeight: canvas.height,
+      scale: getViewState().camera.scale,
+    });
+    const nearestId = findNearestParticle({
+      particles: simulationState.particles,
+      worldX: worldX,
+      worldY: worldY,
+      selectionRadius: selectionRadius,
+    });
+    if (nearestId !== null)
+      setSimulationState({ ...simulationState, selectedParticleId: nearestId });
+  };
+
   canvas.addEventListener("click", (event) => {
     // Skip synthetic click fired after touchend to avoid double-selecting.
     if (performance.now() - lastTouchTimestamp < 500) return;
-    const state = getState();
-    const boundingRect = canvas.getBoundingClientRect();
-    const worldX =
-      (event.clientX - boundingRect.left - canvas.width / 2) /
-      state.camera.scale;
-    const worldY =
-      -(event.clientY - boundingRect.top - canvas.height / 2) /
-      state.camera.scale;
-    const nearestId = findNearestParticle({
-      particles: state.particles,
-      worldX: worldX,
-      worldY: worldY,
+    selectParticleAt({
+      clientX: event.clientX,
+      clientY: event.clientY,
       selectionRadius: 3,
     });
-    if (nearestId !== null)
-      setState({ ...state, selectedParticleId: nearestId });
   });
 
   canvas.addEventListener(
     "wheel",
     (event) => {
       event.preventDefault();
-      const state = getState();
       const factor = event.deltaY < 0 ? 1.12 : 0.89;
-      const newScale = Math.max(5, Math.min(200, state.camera.scale * factor));
-      setState({ ...state, camera: { scale: newScale } });
+      setCameraScale(getViewState().camera.scale * factor);
     },
     { passive: false },
   );
@@ -89,7 +123,7 @@ export function buildInputAdapter(props: {
           event.touches[0].clientX - event.touches[1].clientX,
           event.touches[0].clientY - event.touches[1].clientY,
         );
-        pinchStartScale = getState().camera.scale;
+        pinchStartScale = getViewState().camera.scale;
       }
     },
     { passive: false },
@@ -101,19 +135,11 @@ export function buildInputAdapter(props: {
       if (event.touches.length === 2) {
         event.preventDefault();
         if (pinchStartDistance === 0) return;
-        const dist = Math.hypot(
+        const distance = Math.hypot(
           event.touches[0].clientX - event.touches[1].clientX,
           event.touches[0].clientY - event.touches[1].clientY,
         );
-        setState({
-          ...getState(),
-          camera: {
-            scale: Math.max(
-              5,
-              Math.min(200, pinchStartScale * (dist / pinchStartDistance)),
-            ),
-          },
-        });
+        setCameraScale(pinchStartScale * (distance / pinchStartDistance));
       }
     },
     { passive: false },
@@ -127,23 +153,14 @@ export function buildInputAdapter(props: {
     ) {
       lastTouchTimestamp = performance.now();
       const touch = event.changedTouches[0];
-      const dx = touch.clientX - touchStartX;
-      const dy = touch.clientY - touchStartY;
-      if (Math.hypot(dx, dy) < 12) {
-        const state = getState();
-        const rect = canvas.getBoundingClientRect();
-        const worldX =
-          (touch.clientX - rect.left - canvas.width / 2) / state.camera.scale;
-        const worldY =
-          -(touch.clientY - rect.top - canvas.height / 2) / state.camera.scale;
-        const nearestId = findNearestParticle({
-          particles: state.particles,
-          worldX: worldX,
-          worldY: worldY,
+      const dragX = touch.clientX - touchStartX;
+      const dragY = touch.clientY - touchStartY;
+      if (Math.hypot(dragX, dragY) < 12) {
+        selectParticleAt({
+          clientX: touch.clientX,
+          clientY: touch.clientY,
           selectionRadius: 5,
         });
-        if (nearestId !== null)
-          setState({ ...state, selectedParticleId: nearestId });
       }
     }
     if (event.touches.length === 0) wasPinch = false;
@@ -158,6 +175,6 @@ export function buildInputAdapter(props: {
     )
       return;
     event.preventDefault();
-    setPaused(!getState().paused);
+    setPaused(!getSimulationState().paused);
   });
 }
