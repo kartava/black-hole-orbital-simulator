@@ -1,15 +1,12 @@
-// Geometric units: G = c = 1, mass scale M = 1
-// All distances in units of M, time in units of M/c = M (with c=1).
-
 import type { BlackHoleGeometry } from "./types";
-
-export const UNIT_MASS = 1;
-// SI physical constants.
-const REDUCED_PLANCK_CONSTANT = 1.054571817e-34; // J·s
-const SPEED_OF_LIGHT = 2.99792458e8; // m/s
-const GRAVITATIONAL_CONSTANT = 6.6743e-11; // m³/(kg·s²)
-const BOLTZMANN_CONSTANT = 1.380649e-23; // J/K
-const SOLAR_MASS_KG = 1.98892e30; // kg
+import {
+  UNIT_MASS,
+  REDUCED_PLANCK_CONSTANT,
+  SPEED_OF_LIGHT,
+  GRAVITATIONAL_CONSTANT,
+  BOLTZMANN_CONSTANT,
+  SOLAR_MASS_KG,
+} from "./constants";
 
 export function outerEventHorizonRadius(spin: number): number {
   return UNIT_MASS + Math.sqrt(UNIT_MASS * UNIT_MASS - spin * spin);
