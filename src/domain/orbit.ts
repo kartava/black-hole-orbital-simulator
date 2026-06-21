@@ -1,12 +1,15 @@
-import { UNIT_MASS, outerEventHorizonRadius } from "./black-hole";
+import { outerEventHorizonRadius } from "./black-hole";
+import { UNIT_MASS } from "./constants";
 import type { OrbitParameters, StateVector } from "./types";
 
+// Right-hand side of the equatorial Kerr geodesic ODE — the physics the
+// numerical integrator marches forward (RK4 lives in the integrator adapter).
 // State vector: [radius, azimuthalAngle, radialVelocity] = [r, φ, dr/dτ]
 // Returns [dr/dτ, dφ/dτ, d²r/dτ²].
 // Derived from Boyer-Lindquist metric: (dr/dτ)² = R/r⁴,
 // where R = P² − Δ(Q²+r²), P = (r²+a²)E − aL, Q = L − aE, Δ = r²−2Mr+a².
-function kerrDerivatives(props: {
-  stateVector: readonly number[];
+export function geodesicDerivative(props: {
+  stateVector: StateVector;
   angularMomentum: number;
   specificEnergy: number;
   spin: number;
@@ -46,43 +49,6 @@ function kerrDerivatives(props: {
   return [radialVelocity, angularVelocity, radialAcceleration];
 }
 
-export function rungeKutta4Step(props: {
-  stateVector: StateVector;
-  angularMomentum: number;
-  specificEnergy: number;
-  spin: number;
-  timeStep: number;
-}): StateVector {
-  const { stateVector, angularMomentum, specificEnergy, spin, timeStep } =
-    props;
-  const computeDerivatives = (currentState: readonly number[]) =>
-    kerrDerivatives({
-      stateVector: currentState,
-      angularMomentum: angularMomentum,
-      specificEnergy: specificEnergy,
-      spin: spin,
-    });
-  const slope1 = computeDerivatives(stateVector);
-  const firstMidpoint = stateVector.map(
-    (component, index) => component + 0.5 * timeStep * slope1[index],
-  );
-  const slope2 = computeDerivatives(firstMidpoint);
-  const secondMidpoint = stateVector.map(
-    (component, index) => component + 0.5 * timeStep * slope2[index],
-  );
-  const slope3 = computeDerivatives(secondMidpoint);
-  const endpointEstimate = stateVector.map(
-    (component, index) => component + timeStep * slope3[index],
-  );
-  const slope4 = computeDerivatives(endpointEstimate);
-  return stateVector.map(
-    (component, index) =>
-      component +
-      (timeStep / 6) *
-        (slope1[index] + 2 * slope2[index] + 2 * slope3[index] + slope4[index]),
-  ) as unknown as StateVector;
-}
-
 // ṫ = [(r²+a²+2Ma²/r)·E − (2Ma/r)·L] / Δ — equatorial Kerr (Boyer-Lindquist).
 export function coordinateTimeRate(props: {
   radius: number;
@@ -94,7 +60,8 @@ export function coordinateTimeRate(props: {
   const radiusSquared = radius * radius;
   const spinSquared = spin * spin;
   const kerrDelta = radiusSquared - 2 * UNIT_MASS * radius + spinSquared;
-  if (kerrDelta <= 0) return 1e6;
+  // At/inside the horizon (Δ ≤ 0) coordinate time freezes: dt/dτ → ∞.
+  if (kerrDelta <= 0) return Infinity;
   const metricTimeCoefficient =
     radiusSquared + spinSquared + (2 * UNIT_MASS * spinSquared) / radius;
   const metricCrossTermCoefficient = (2 * UNIT_MASS * spin) / radius;
