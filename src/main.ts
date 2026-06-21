@@ -127,7 +127,11 @@ canvas.addEventListener(
 );
 
 canvas.addEventListener("touchend", (event) => {
-  if (!wasPinch && event.touches.length === 0 && event.changedTouches.length === 1) {
+  if (
+    !wasPinch &&
+    event.touches.length === 0 &&
+    event.changedTouches.length === 1
+  ) {
     lastTouchTimestamp = performance.now();
     const touch = event.changedTouches[0];
     const dx = touch.clientX - touchStartX;
@@ -178,7 +182,9 @@ sidebarBackdrop.addEventListener("click", closeSidebar);
 sidebarClose.addEventListener("click", closeSidebar);
 
 // Swipe-down-to-close: listen on the full header for a usable touch target.
-const sidebarHeader = sidebar.querySelector(".sidebar-header") as HTMLElement | null;
+const sidebarHeader = sidebar.querySelector(
+  ".sidebar-header",
+) as HTMLElement | null;
 if (sidebarHeader) {
   let dragStartY = 0;
   sidebarHeader.addEventListener(
