@@ -41,6 +41,50 @@ export function drawAccretionDisk(props: {
   context.fill();
 }
 
+// Glow haze around the horizon — drawn before the ergosphere/rings so they
+// render on top of it rather than being buried underneath.
+export function drawHorizonGlow(props: {
+  context: CanvasRenderingContext2D;
+  centerX: number;
+  centerY: number;
+  horizonRadius: number;
+  scale: number;
+}): void {
+  const { context, centerX, centerY, horizonRadius, scale } = props;
+  const eventHorizonScreenRadius = horizonRadius * scale;
+  const glowGradient = context.createRadialGradient(
+    centerX,
+    centerY,
+    0,
+    centerX,
+    centerY,
+    eventHorizonScreenRadius * 2.2,
+  );
+  glowGradient.addColorStop(0, "rgba(0,0,0,1)");
+  glowGradient.addColorStop(0.75, "rgba(0,0,0,0.95)");
+  glowGradient.addColorStop(1, "rgba(30,10,60,0)");
+  context.beginPath();
+  context.arc(centerX, centerY, eventHorizonScreenRadius * 2.2, 0, Math.PI * 2);
+  context.fillStyle = glowGradient;
+  context.fill();
+}
+
+// Solid event horizon disk — drawn after the rings so it covers any ergosphere
+// fill that bled inside r₊.
+export function drawEventHorizonDisk(props: {
+  context: CanvasRenderingContext2D;
+  centerX: number;
+  centerY: number;
+  horizonRadius: number;
+  scale: number;
+}): void {
+  const { context, centerX, centerY, horizonRadius, scale } = props;
+  context.beginPath();
+  context.arc(centerX, centerY, horizonRadius * scale, 0, Math.PI * 2);
+  context.fillStyle = "#000";
+  context.fill();
+}
+
 export function drawCircleRing(props: {
   context: CanvasRenderingContext2D;
   centerX: number;
@@ -98,7 +142,7 @@ export function drawOrbitRings(props: {
   photonOrbitRadius: number;
   showISCO: boolean;
   showPhotonSphere: boolean;
-  toScreenCoordinates: (x: number, y: number) => [number, number];
+  toScreenCoordinates: (x: number, y: number) => readonly [number, number];
 }): void {
   const {
     context,
