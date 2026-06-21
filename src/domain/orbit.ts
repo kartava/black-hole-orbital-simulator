@@ -1,17 +1,15 @@
 import { UNIT_MASS, outerEventHorizonRadius } from "./black-hole";
 import type { OrbitParameters } from "./types";
-export type { OrbitParameters };
-
 // State vector: [radius, azimuthalAngle, radialVelocity] = [r, φ, dr/dτ]
 // Returns [dr/dτ, dφ/dτ, d²r/dτ²].
 // Derived from Boyer-Lindquist metric: (dr/dτ)² = R/r⁴,
 // where R = P² − Δ(Q²+r²), P = (r²+a²)E − aL, Q = L − aE, Δ = r²−2Mr+a².
 function kerrDerivatives(props: {
-  stateVector: number[];
+  stateVector: readonly number[];
   angularMomentum: number;
   specificEnergy: number;
   spin: number;
-}): number[] {
+}): [number, number, number] {
   const { stateVector, angularMomentum, specificEnergy, spin } = props;
   const [radius, , radialVelocity] = stateVector;
   if (radius <= 0) return [0, 0, 0];
@@ -48,20 +46,20 @@ function kerrDerivatives(props: {
 }
 
 export function rungeKutta4Step(props: {
-  stateVector: number[];
+  stateVector: readonly [number, number, number];
   angularMomentum: number;
   specificEnergy: number;
   spin: number;
   timeStep: number;
-}): number[] {
+}): [number, number, number] {
   const { stateVector, angularMomentum, specificEnergy, spin, timeStep } =
     props;
-  const computeDerivatives = (currentState: number[]) =>
+  const computeDerivatives = (currentState: readonly number[]) =>
     kerrDerivatives({
       stateVector: currentState,
-      angularMomentum,
-      specificEnergy,
-      spin,
+      angularMomentum: angularMomentum,
+      specificEnergy: specificEnergy,
+      spin: spin,
     });
   const slope1 = computeDerivatives(stateVector);
   const firstMidpoint = stateVector.map(
@@ -81,7 +79,7 @@ export function rungeKutta4Step(props: {
       component +
       (timeStep / 6) *
         (slope1[index] + 2 * slope2[index] + 2 * slope3[index] + slope4[index]),
-  );
+  ) as [number, number, number];
 }
 
 // ṫ = [(r²+a²+2Ma²/r)·E − (2Ma/r)·L] / Δ — equatorial Kerr (Boyer-Lindquist).
@@ -160,7 +158,7 @@ export function circularOrbitParameters(props: {
     ? angularMomentumMagnitude
     : -angularMomentumMagnitude;
 
-  return { angularMomentum, specificEnergy, radialVelocity: 0 };
+  return { angularMomentum: angularMomentum, specificEnergy: specificEnergy, radialVelocity: 0 };
 }
 
 // Schwarzschild: V²(r) = (1−2M/r)(1+L²/r²), independent of E.
@@ -228,5 +226,5 @@ export function orbitParametersFromInitialConditions(props: {
     (-quadraticCoeffB + Math.sqrt(discriminant)) / (2 * quadraticCoeffA);
   if (specificEnergy <= 0) return null;
 
-  return { angularMomentum, specificEnergy, radialVelocity };
+  return { angularMomentum: angularMomentum, specificEnergy: specificEnergy, radialVelocity: radialVelocity };
 }

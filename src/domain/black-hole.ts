@@ -2,7 +2,6 @@
 // All distances in units of M, time in units of M/c = M (with c=1).
 
 import type { BlackHoleGeometry } from "./types";
-export type { BlackHoleGeometry };
 
 export const UNIT_MASS = 1;
 
@@ -59,9 +58,9 @@ export function blackHoleGeometry(spin: number): BlackHoleGeometry {
   return {
     horizon: outerEventHorizonRadius(spin),
     ergosphere: equatorialErgosphereRadius(),
-    iscoPrograde: innermostStableOrbitRadius({ spin, prograde: true }),
-    iscoRetrograde: innermostStableOrbitRadius({ spin, prograde: false }),
-    photonSphere: photonOrbitRadius({ spin, prograde: true }),
+    iscoPrograde: innermostStableOrbitRadius({ spin: spin, prograde: true }),
+    iscoRetrograde: innermostStableOrbitRadius({ spin: spin, prograde: false }),
+    photonSphere: photonOrbitRadius({ spin: spin, prograde: true }),
   };
 }
 

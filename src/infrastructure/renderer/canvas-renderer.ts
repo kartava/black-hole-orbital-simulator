@@ -1,3 +1,4 @@
+import { ParticleStatus } from "../../domain/particle";
 import type { Particle } from "../../domain/particle";
 import { particleX, particleY } from "../../domain/particle";
 import { tidalStretchFactor } from "../../domain/orbit";
@@ -79,10 +80,10 @@ export function render(props: {
   } = blackHoleGeometry(spin);
 
   drawAccretionDisk({
-    context,
-    centerX,
-    centerY,
-    scale,
+    context: context,
+    centerX: centerX,
+    centerY: centerY,
+    scale: scale,
     iscoRadius: iscoProgradeRadius,
   });
 
@@ -106,19 +107,19 @@ export function render(props: {
   context.fill();
 
   drawOrbitRings({
-    context,
-    centerX,
-    centerY,
-    scale,
-    spin,
-    horizonRadius,
-    ergosphereRadius,
-    iscoProgradeRadius,
-    iscoRetrogradeRadius,
-    photonOrbitRadius,
+    context: context,
+    centerX: centerX,
+    centerY: centerY,
+    scale: scale,
+    spin: spin,
+    horizonRadius: horizonRadius,
+    ergosphereRadius: ergosphereRadius,
+    iscoProgradeRadius: iscoProgradeRadius,
+    iscoRetrogradeRadius: iscoRetrogradeRadius,
+    photonOrbitRadius: photonOrbitRadius,
     showISCO: options.showISCO,
     showPhotonSphere: options.showPhotonSphere,
-    toScreenCoordinates,
+    toScreenCoordinates: toScreenCoordinates,
   });
 
   // Solid event horizon disk — covers any ergosphere fill that bled inside r₊.
@@ -152,7 +153,7 @@ export function render(props: {
       context.globalAlpha = 1;
     }
 
-    if (particle.alive) {
+    if (particle.status === ParticleStatus.ALIVE) {
       const [screenX, screenY] = toScreenCoordinates(
         particleX(particle),
         particleY(particle),
@@ -208,12 +209,12 @@ export function render(props: {
     const panelHeight = 130;
     panelBottomEdge -= panelHeight;
     drawEffectivePotentialPanel({
-      context,
-      canvasWidth,
+      context: context,
+      canvasWidth: canvasWidth,
       panelOriginY: panelBottomEdge,
       particle: selectedParticle,
-      spin,
-      horizonRadius,
+      spin: spin,
+      horizonRadius: horizonRadius,
     });
     panelBottomEdge -= 10;
   }
@@ -222,8 +223,8 @@ export function render(props: {
     const panelHeight = 100;
     panelBottomEdge -= panelHeight;
     drawTimeDilationPanel({
-      context,
-      canvasWidth,
+      context: context,
+      canvasWidth: canvasWidth,
       panelOriginY: panelBottomEdge,
       particle: selectedParticle,
     });

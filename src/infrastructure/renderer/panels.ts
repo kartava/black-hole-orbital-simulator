@@ -1,3 +1,4 @@
+import { ParticleStatus } from "../../domain/particle";
 import type { Particle } from "../../domain/particle";
 import { particleRadius, getCoordinateTimeRate } from "../../domain/particle";
 import { effectivePotential } from "../../domain/orbit";
@@ -78,9 +79,9 @@ export function drawEffectivePotentialPanel(props: {
   ) {
     const potentialValue = effectivePotential({
       radius: sampleRadius,
-      angularMomentum,
-      specificEnergy,
-      spin,
+      angularMomentum: angularMomentum,
+      specificEnergy: specificEnergy,
+      spin: spin,
     });
     if (
       !isFinite(potentialValue) ||
@@ -105,20 +106,23 @@ export function drawEffectivePotentialPanel(props: {
   context.lineWidth = 1.8;
   context.stroke();
 
-  const r = particleRadius(particle);
-  if (r >= plotRadiusMin && r <= plotRadiusMax) {
+  const currentRadius = particleRadius(particle);
+  if (currentRadius >= plotRadiusMin && currentRadius <= plotRadiusMax) {
     const currentPotentialValue = effectivePotential({
-      radius: r,
-      angularMomentum,
-      specificEnergy,
-      spin,
+      radius: currentRadius,
+      angularMomentum: angularMomentum,
+      specificEnergy: specificEnergy,
+      spin: spin,
     });
     if (
       isFinite(currentPotentialValue) &&
       currentPotentialValue >= potentialMin &&
       currentPotentialValue <= potentialMax
     ) {
-      const [dotX, dotY] = toPlotCoordinates(r, currentPotentialValue);
+      const [dotX, dotY] = toPlotCoordinates(
+        currentRadius,
+        currentPotentialValue,
+      );
       context.beginPath();
       context.arc(dotX, dotY, 4, 0, Math.PI * 2);
       context.fillStyle = particle.color;
@@ -163,9 +167,10 @@ export function drawTimeDilationPanel(props: {
   const properTimeValue = particle.properTime;
   const properToCoordTimeRatio =
     coordinateTimeValue > 0 ? properTimeValue / coordinateTimeValue : 1;
-  const currentCoordinateTimeRate = particle.alive
-    ? getCoordinateTimeRate(particle)
-    : 1;
+  const currentCoordinateTimeRate =
+    particle.status === ParticleStatus.ALIVE
+      ? getCoordinateTimeRate(particle)
+      : 1;
 
   const barWidth = panelWidth - 60;
   const barHeight = 10;

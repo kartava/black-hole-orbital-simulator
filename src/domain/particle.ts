@@ -1,5 +1,14 @@
 import { coordinateTimeRate } from "./orbit";
 
+export const ParticleStatus = {
+  ALIVE: "alive",
+  CAPTURED: "captured",
+  ESCAPED: "escaped",
+} as const;
+
+export type ParticleStatus =
+  (typeof ParticleStatus)[keyof typeof ParticleStatus];
+
 export interface TrailPoint {
   readonly x: number;
   readonly y: number;
@@ -7,16 +16,14 @@ export interface TrailPoint {
 
 export interface Particle {
   readonly id: string;
-  readonly stateVector: readonly number[];
+  readonly stateVector: readonly [number, number, number];
   readonly angularMomentum: number;
   readonly specificEnergy: number;
   readonly spin: number;
   readonly color: string;
   readonly label: string;
   readonly trail: readonly TrailPoint[];
-  readonly alive: boolean;
-  readonly captured: boolean;
-  readonly escaped: boolean;
+  readonly status: ParticleStatus;
   readonly properTime: number;
   readonly coordinateTime: number;
 }
@@ -48,39 +55,37 @@ export function createParticle(props: CreateParticleProps): Particle {
 
   return {
     id: String(nextParticleId++),
-    stateVector: [radius, azimuthalAngle, radialVelocity],
-    angularMomentum,
-    specificEnergy,
-    spin,
-    color,
-    label,
+    stateVector: [radius, azimuthalAngle, radialVelocity] as [number, number, number],
+    angularMomentum: angularMomentum,
+    specificEnergy: specificEnergy,
+    spin: spin,
+    color: color,
+    label: label,
     trail: [],
-    alive: true,
-    captured: false,
-    escaped: false,
+    status: ParticleStatus.ALIVE,
     properTime: 0,
     coordinateTime: 0,
   };
 }
 
-export function particleRadius(p: Particle): number {
-  return p.stateVector[0];
+export function particleRadius(particle: Particle): number {
+  return particle.stateVector[0];
 }
 
-export function particleX(p: Particle): number {
-  return p.stateVector[0] * Math.cos(p.stateVector[1]);
+export function particleX(particle: Particle): number {
+  return particle.stateVector[0] * Math.cos(particle.stateVector[1]);
 }
 
-export function particleY(p: Particle): number {
-  return p.stateVector[0] * Math.sin(p.stateVector[1]);
+export function particleY(particle: Particle): number {
+  return particle.stateVector[0] * Math.sin(particle.stateVector[1]);
 }
 
-export function getCoordinateTimeRate(p: Particle): number {
+export function getCoordinateTimeRate(particle: Particle): number {
   return coordinateTimeRate({
-    radius: p.stateVector[0],
-    specificEnergy: p.specificEnergy,
-    angularMomentum: p.angularMomentum,
-    spin: p.spin,
+    radius: particle.stateVector[0],
+    specificEnergy: particle.specificEnergy,
+    angularMomentum: particle.angularMomentum,
+    spin: particle.spin,
   });
 }
 

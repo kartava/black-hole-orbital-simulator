@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { resolve } from "path";
 
 import { defineConfig } from "vite";
@@ -11,5 +12,9 @@ export default defineConfig({
         guide: resolve(__dirname, "guide.html"),
       },
     },
+  },
+  test: {
+    environment: "node",
+    include: ["src/**/*.test.ts"],
   },
 });

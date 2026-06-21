@@ -1,8 +1,21 @@
 import type { PhysicsIntegrator } from "./integrator";
-import type { SimulationState } from "./simulation-state";
-import type { Particle, TrailPoint } from "../domain/particle";
 import { coordinateTimeRate } from "../domain/orbit";
 import { outerEventHorizonRadius } from "../domain/black-hole";
+import { ParticleStatus } from "../domain/particle";
+import type { Particle, TrailPoint } from "../domain/particle";
+import type { Camera, DisplayOptions, SpawnState } from "../types";
+
+export interface SimulationState {
+  readonly particles: readonly Particle[];
+  readonly selectedParticleId: string | null;
+  readonly paused: boolean;
+  readonly simulationSpeed: number;
+  readonly solarMasses: number;
+  readonly spin: number;
+  readonly camera: Camera;
+  readonly spawn: SpawnState;
+  readonly options: DisplayOptions;
+}
 
 const PROPER_TIME_STEP = 0.04;
 const TRAIL_MAX_LENGTH = 800;
@@ -17,10 +30,10 @@ export class SimulationEngine {
       1,
       Math.round(state.simulationSpeed * deltaTime * 60),
     );
-    const particles = state.particles.map((p) =>
-      this.stepParticle({ particle: p, integrationSubsteps: integrationSteps }),
+    const particles = state.particles.map((particle) =>
+      this.stepParticle({ particle: particle, integrationSubsteps: integrationSteps }),
     );
-    return { ...state, particles };
+    return { ...state, particles: particles };
   }
 
   private stepParticle(props: {
@@ -28,17 +41,17 @@ export class SimulationEngine {
     integrationSubsteps: number;
   }): Particle {
     const { particle, integrationSubsteps } = props;
-    if (!particle.alive) return particle;
+    if (particle.status !== ParticleStatus.ALIVE) return particle;
 
     const captureRadius = outerEventHorizonRadius(particle.spin) * 1.02;
-    let stateVector = [...particle.stateVector];
+    let stateVector: [number, number, number] = [...particle.stateVector] as [number, number, number];
     let properTime = particle.properTime;
     let coordinateTime = particle.coordinateTime;
     const trail: TrailPoint[] = [...particle.trail];
 
-    for (let i = 0; i < integrationSubsteps; i++) {
+    for (let step = 0; step < integrationSubsteps; step++) {
       const nextState = this.integrator.integrate({
-        stateVector,
+        stateVector: stateVector,
         angularMomentum: particle.angularMomentum,
         specificEnergy: particle.specificEnergy,
         spin: particle.spin,
@@ -49,23 +62,21 @@ export class SimulationEngine {
       if (radius <= captureRadius || !isFinite(radius)) {
         return {
           ...particle,
-          stateVector,
-          trail,
-          properTime,
-          coordinateTime,
-          alive: false,
-          captured: true,
+          stateVector: stateVector,
+          trail: trail,
+          properTime: properTime,
+          coordinateTime: coordinateTime,
+          status: ParticleStatus.CAPTURED,
         };
       }
       if (radius > ESCAPE_RADIUS) {
         return {
           ...particle,
-          stateVector,
-          trail,
-          properTime,
-          coordinateTime,
-          alive: false,
-          escaped: true,
+          stateVector: stateVector,
+          trail: trail,
+          properTime: properTime,
+          coordinateTime: coordinateTime,
+          status: ParticleStatus.ESCAPED,
         };
       }
 
@@ -73,7 +84,7 @@ export class SimulationEngine {
       properTime += PROPER_TIME_STEP;
       coordinateTime +=
         coordinateTimeRate({
-          radius,
+          radius: radius,
           specificEnergy: particle.specificEnergy,
           angularMomentum: particle.angularMomentum,
           spin: particle.spin,
@@ -86,7 +97,7 @@ export class SimulationEngine {
       if (trail.length > TRAIL_MAX_LENGTH) trail.shift();
     }
 
-    return { ...particle, stateVector, trail, properTime, coordinateTime };
+    return { ...particle, stateVector: stateVector, trail: trail, properTime: properTime, coordinateTime: coordinateTime };
   }
 }
 

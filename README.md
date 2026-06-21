@@ -136,23 +136,42 @@ Output goes to `dist/` and can be served by any static file host.
 
 ## Project Structure
 
+The codebase follows a DDD/Hexagonal (Ports & Adapters) architecture. The domain layer is pure TypeScript with no dependencies; infrastructure adapters plug in at the composition root.
+
 ```
 src/
-  physics.ts    — Pure GR math: Kerr geodesics, orbit parameters, horizon/ISCO/photon radii, Hawking temperature
-  particles.ts  — Particle class (RK4 integration, trail, proper/coordinate time), color cycler
-  controls.ts   — Sidebar: preset table, sliders, event wiring, returns per-frame readout updater
-  renderer.ts   — Canvas 2D: starfield, accretion disk, rings, labels, V²(r) and time dilation panels
-  types.ts      — Shared interfaces (SimulationState, Camera, DisplayOptions, SpawnState)
-  main.ts       — Entry point: state, animation loop, resize, input events
-  assets/
-    styles.css  — UI styles
+├── domain/
+│   ├── black-hole.ts     Pure GR geometry: horizon, ISCO, photon orbit, Hawking temperature, SI conversions
+│   ├── orbit.ts          Orbital mechanics: Kerr derivatives, RK4 step, circular orbit params, effective potential, tidal factor
+│   ├── particle.ts       Particle data interface, createParticle() factory, helper functions, color cycler
+│   └── types.ts          Domain-only interfaces: BlackHoleGeometry, OrbitParameters
+│
+├── application/
+│   ├── simulation-engine.ts  SimulationEngine class — step() returns new immutable SimulationState each frame
+│   ├── simulation-state.ts   SimulationState interface (all fields readonly)
+│   └── integrator.ts         PhysicsIntegrator port interface (implemented by infrastructure)
+│
+├── infrastructure/
+│   ├── renderer/
+│   │   ├── canvas-renderer.ts  Canvas 2D composition: render() + initializeBackgroundStars()
+│   │   ├── overlays.ts         Accretion disk, orbit rings, ergosphere, labels
+│   │   └── panels.ts           Effective potential V²(r) and time dilation panels
+│   ├── rk4-integrator.ts   Rk4Integrator — implements PhysicsIntegrator with a 4th-order RK4 step
+│   └── controls-ui.ts      Sidebar DOM: sliders, presets, readouts; wired via getState/setState callbacks
+│
+├── types.ts      Shared UI interfaces: Camera, DisplayOptions, SpawnState (all fields readonly)
+├── colors.ts     Named color constants for the renderer
+├── main.ts       Composition root: wires all layers, owns DOM events and animation loop
+└── assets/
+    styles.css    UI styles
 ```
 
 ## Tech Stack
 
 - **Vite** — dev server and bundler
-- TypeScript (no framework)
-- HTML5 Canvas 2D
+- **TypeScript** (strict mode, no framework)
+- **HTML5 Canvas 2D**
+- **Vitest** — unit tests for the domain physics layer
 
 ## License
 

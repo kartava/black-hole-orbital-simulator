@@ -1,5 +1,5 @@
 export interface IntegrateProps {
-  stateVector: number[];
+  stateVector: readonly [number, number, number];
   angularMomentum: number;
   specificEnergy: number;
   spin: number;
@@ -7,5 +7,5 @@ export interface IntegrateProps {
 }
 
 export interface PhysicsIntegrator {
-  integrate(props: IntegrateProps): number[];
+  integrate(props: IntegrateProps): [number, number, number];
 }

@@ -132,9 +132,9 @@ export function drawOrbitRings(props: {
     context.fillStyle = ergosphereGradient;
     context.fill();
     drawCircleRing({
-      context,
-      centerX,
-      centerY,
+      context: context,
+      centerX: centerX,
+      centerY: centerY,
       ringRadius: ergosphereRadius * scale,
       ringColor: COLOR_ERGOSPHERE,
       opacity: 0.45,
@@ -142,7 +142,7 @@ export function drawOrbitRings(props: {
     });
     const [ex, ey] = toScreenCoordinates(0, ergosphereRadius);
     drawLabel({
-      context,
+      context: context,
       posX: ex + 5,
       posY: ey - 4,
       labelText: "Ergosphere  2M",
@@ -152,9 +152,9 @@ export function drawOrbitRings(props: {
 
   if (showISCO) {
     drawCircleRing({
-      context,
-      centerX,
-      centerY,
+      context: context,
+      centerX: centerX,
+      centerY: centerY,
       ringRadius: iscoProgradeRadius * scale,
       ringColor: COLOR_ISCO_PROGRADE,
       opacity: 0.45,
@@ -162,9 +162,9 @@ export function drawOrbitRings(props: {
     });
     if (spin > 0.01)
       drawCircleRing({
-        context,
-        centerX,
-        centerY,
+        context: context,
+        centerX: centerX,
+        centerY: centerY,
         ringRadius: iscoRetrogradeRadius * scale,
         ringColor: COLOR_ISCO_RETROGRADE,
         opacity: 0.3,
@@ -174,9 +174,9 @@ export function drawOrbitRings(props: {
 
   if (showPhotonSphere)
     drawCircleRing({
-      context,
-      centerX,
-      centerY,
+      context: context,
+      centerX: centerX,
+      centerY: centerY,
       ringRadius: photonOrbitRadius * scale,
       ringColor: COLOR_PHOTON_SPHERE,
       opacity: 0.55,
@@ -186,7 +186,7 @@ export function drawOrbitRings(props: {
   if (showISCO) {
     const [ix, iy] = toScreenCoordinates(0, iscoProgradeRadius);
     drawLabel({
-      context,
+      context: context,
       posX: ix + 5,
       posY: iy - 4,
       labelText: `ISCO  ${iscoProgradeRadius.toFixed(1)}M`,
@@ -195,7 +195,7 @@ export function drawOrbitRings(props: {
     if (spin > 0.01) {
       const [rx, ry] = toScreenCoordinates(0, iscoRetrogradeRadius);
       drawLabel({
-        context,
+        context: context,
         posX: rx + 5,
         posY: ry - 4,
         labelText: `ISCO⁻  ${iscoRetrogradeRadius.toFixed(1)}M`,
@@ -207,7 +207,7 @@ export function drawOrbitRings(props: {
   if (showPhotonSphere) {
     const [px, py] = toScreenCoordinates(0, photonOrbitRadius);
     drawLabel({
-      context,
+      context: context,
       posX: px + 5,
       posY: py - 4,
       labelText: `Photon sphere  ${photonOrbitRadius.toFixed(1)}M`,
@@ -217,7 +217,7 @@ export function drawOrbitRings(props: {
 
   const [hx, hy] = toScreenCoordinates(0, horizonRadius);
   drawLabel({
-    context,
+    context: context,
     posX: hx + 5,
     posY: hy - 4,
     labelText: `r₊  ${horizonRadius.toFixed(2)}M`,
