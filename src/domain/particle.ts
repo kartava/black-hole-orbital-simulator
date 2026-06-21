@@ -30,6 +30,7 @@ export interface Particle {
 }
 
 interface CreateParticleProps {
+  id: string;
   radius: number;
   azimuthalAngle?: number;
   radialVelocity?: number;
@@ -40,10 +41,14 @@ interface CreateParticleProps {
   label?: string;
 }
 
-let nextParticleId = 0;
+export function createParticleIdSequence(): () => string {
+  let nextParticleId = 0;
+  return () => String(nextParticleId++);
+}
 
 export function createParticle(props: CreateParticleProps): Particle {
   const {
+    id,
     radius,
     azimuthalAngle = 0,
     radialVelocity = 0,
@@ -55,7 +60,7 @@ export function createParticle(props: CreateParticleProps): Particle {
   } = props;
 
   return {
-    id: String(nextParticleId++),
+    id: id,
     stateVector: [radius, azimuthalAngle, radialVelocity] as StateVector,
     angularMomentum: angularMomentum,
     specificEnergy: specificEnergy,
