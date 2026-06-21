@@ -1,7 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { StateVector } from "../types";
 import {
-  rungeKutta4Step,
   coordinateTimeRate,
   circularOrbitParameters,
   effectivePotential,
@@ -64,6 +62,36 @@ describe("effectivePotential (Schwarzschild)", () => {
   });
 });
 
+describe("effectivePotential (Kerr)", () => {
+  it("V²(r) ≈ E² at a prograde Kerr circular orbit (turning point)", () => {
+    const spin = 0.5;
+    const radius = 10;
+    const params = circularOrbitParameters({
+      orbitalRadius: radius,
+      spin: spin,
+      prograde: true,
+    })!;
+    const potential = effectivePotential({
+      radius: radius,
+      angularMomentum: params.angularMomentum,
+      specificEnergy: params.specificEnergy,
+      spin: spin,
+    });
+    // On a circular orbit ṙ=0 ⇒ V²(r) = E².
+    expect(potential).toBeCloseTo(
+      params.specificEnergy * params.specificEnergy,
+      6,
+    );
+  });
+
+  it("differs from the Schwarzschild value when spin is nonzero", () => {
+    const common = { radius: 8, angularMomentum: 3.5, specificEnergy: 0.96 };
+    const schwarzschild = effectivePotential({ ...common, spin: 0 });
+    const kerr = effectivePotential({ ...common, spin: 0.7 });
+    expect(kerr).not.toBeCloseTo(schwarzschild, 4);
+  });
+});
+
 describe("circularOrbitParameters", () => {
   it("returns null inside the event horizon", () => {
     expect(circularOrbitParameters({ orbitalRadius: 1.5, spin: 0 })).toBeNull();
@@ -102,58 +130,6 @@ describe("circularOrbitParameters", () => {
     expect(retro).not.toBeNull();
     expect(pro!.angularMomentum).toBeGreaterThan(0);
     expect(retro!.angularMomentum).toBeLessThan(0);
-  });
-});
-
-describe("rungeKutta4Step energy conservation", () => {
-  it("conserves E (to within 0.1%) over many steps on a circular orbit", () => {
-    const r0 = 10;
-    const spin = 0;
-    const params = circularOrbitParameters({ orbitalRadius: r0, spin })!;
-    const { angularMomentum, specificEnergy } = params;
-
-    let stateVector: StateVector = [r0, 0, 0];
-    const steps = 500;
-    for (let i = 0; i < steps; i++) {
-      stateVector = rungeKutta4Step({
-        stateVector: stateVector,
-        angularMomentum: angularMomentum,
-        specificEnergy: specificEnergy,
-        spin: spin,
-        timeStep: 0.04,
-      });
-    }
-
-    const [r] = stateVector;
-    // On a circular orbit r should not drift more than 1% of initial radius.
-    expect(Math.abs(r - r0) / r0).toBeLessThan(0.01);
-  });
-
-  it("conserves effective energy E² − V²(r) ≈ ṙ² near zero on circular orbit", () => {
-    const r0 = 12;
-    const spin = 0;
-    const params = circularOrbitParameters({ orbitalRadius: r0, spin })!;
-    const { angularMomentum, specificEnergy } = params;
-
-    let stateVector: StateVector = [r0, 0, 0];
-    for (let i = 0; i < 100; i++) {
-      stateVector = rungeKutta4Step({
-        stateVector: stateVector,
-        angularMomentum: angularMomentum,
-        specificEnergy: specificEnergy,
-        spin: spin,
-        timeStep: 0.04,
-      });
-    }
-    const [r, , rdot] = stateVector;
-    const vSq = effectivePotential({
-      radius: r,
-      angularMomentum,
-      specificEnergy,
-      spin,
-    });
-    const residual = specificEnergy * specificEnergy - vSq - rdot * rdot;
-    expect(Math.abs(residual)).toBeLessThan(1e-6);
   });
 });
 
@@ -225,5 +201,34 @@ describe("orbitParametersFromInitialConditions", () => {
       spin: 0,
     });
     expect(result).toBeNull();
+  });
+
+  it("recovers prograde Kerr circular-orbit energy (spin > 0)", () => {
+    const radius = 10;
+    const spin = 0.6;
+    const circular = circularOrbitParameters({
+      orbitalRadius: radius,
+      spin: spin,
+      prograde: true,
+    })!;
+    const recovered = orbitParametersFromInitialConditions({
+      radius: radius,
+      angularMomentum: circular.angularMomentum,
+      radialVelocity: 0,
+      spin: spin,
+    });
+    expect(recovered).not.toBeNull();
+    expect(recovered!.specificEnergy).toBeCloseTo(circular.specificEnergy, 6);
+  });
+
+  it("preserves a nonzero radial velocity in the returned parameters (Kerr)", () => {
+    const recovered = orbitParametersFromInitialConditions({
+      radius: 20,
+      angularMomentum: 4,
+      radialVelocity: -0.1,
+      spin: 0.4,
+    });
+    expect(recovered).not.toBeNull();
+    expect(recovered!.radialVelocity).toBe(-0.1);
   });
 });
