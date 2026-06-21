@@ -4,6 +4,7 @@ import { outerEventHorizonRadius } from "../domain/black-hole";
 import { ParticleStatus } from "../domain/particle";
 import type { Particle, TrailPoint } from "../domain/particle";
 import type { Camera, DisplayOptions, SpawnState } from "../types";
+import type { StateVector } from "../domain/types";
 
 export interface SimulationState {
   readonly particles: readonly Particle[];
@@ -31,7 +32,10 @@ export class SimulationEngine {
       Math.round(state.simulationSpeed * deltaTime * 60),
     );
     const particles = state.particles.map((particle) =>
-      this.stepParticle({ particle: particle, integrationSubsteps: integrationSteps }),
+      this.stepParticle({
+        particle: particle,
+        integrationSubsteps: integrationSteps,
+      }),
     );
     return { ...state, particles: particles };
   }
@@ -44,7 +48,7 @@ export class SimulationEngine {
     if (particle.status !== ParticleStatus.ALIVE) return particle;
 
     const captureRadius = outerEventHorizonRadius(particle.spin) * 1.02;
-    let stateVector: [number, number, number] = [...particle.stateVector] as [number, number, number];
+    let stateVector: StateVector = [...particle.stateVector] as StateVector;
     let properTime = particle.properTime;
     let coordinateTime = particle.coordinateTime;
     const trail: TrailPoint[] = [...particle.trail];
@@ -97,7 +101,13 @@ export class SimulationEngine {
       if (trail.length > TRAIL_MAX_LENGTH) trail.shift();
     }
 
-    return { ...particle, stateVector: stateVector, trail: trail, properTime: properTime, coordinateTime: coordinateTime };
+    return {
+      ...particle,
+      stateVector: stateVector,
+      trail: trail,
+      properTime: properTime,
+      coordinateTime: coordinateTime,
+    };
   }
 }
 

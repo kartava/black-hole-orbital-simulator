@@ -28,7 +28,7 @@ type ParticleBlueprint = {
   label: string;
 };
 
-interface PresetDef {
+interface PresetDefinition {
   id: string;
   label: string;
   build(props: {
@@ -37,7 +37,7 @@ interface PresetDef {
   }): ParticleBlueprint | null;
 }
 
-const PRESETS: PresetDef[] = [
+const PRESETS: PresetDefinition[] = [
   {
     id: "isco",
     label: "ISCO circular",
@@ -85,7 +85,10 @@ const PRESETS: PresetDef[] = [
         spin,
       } = props;
       const orbitalRadius = Math.max(photonSphere + 0.5, 4);
-      const params = circularOrbitParameters({ orbitalRadius: orbitalRadius, spin: spin });
+      const params = circularOrbitParameters({
+        orbitalRadius: orbitalRadius,
+        spin: spin,
+      });
       if (!params) return null;
       return {
         radius: orbitalRadius,
@@ -152,7 +155,10 @@ const PRESETS: PresetDef[] = [
         spin,
       } = props;
       const orbitalRadius = photonSphere + 0.15;
-      const params = circularOrbitParameters({ orbitalRadius: orbitalRadius, spin: spin });
+      const params = circularOrbitParameters({
+        orbitalRadius: orbitalRadius,
+        spin: spin,
+      });
       if (!params) return null;
       return {
         radius: orbitalRadius,

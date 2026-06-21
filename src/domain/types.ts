@@ -1,3 +1,5 @@
+export type StateVector = readonly [r: number, phi: number, rdot: number];
+
 export interface BlackHoleGeometry {
   horizon: number;
   ergosphere: number;

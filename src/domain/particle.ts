@@ -1,4 +1,5 @@
 import { coordinateTimeRate } from "./orbit";
+import type { StateVector } from "./types";
 
 export const ParticleStatus = {
   ALIVE: "alive",
@@ -16,7 +17,7 @@ export interface TrailPoint {
 
 export interface Particle {
   readonly id: string;
-  readonly stateVector: readonly [number, number, number];
+  readonly stateVector: StateVector;
   readonly angularMomentum: number;
   readonly specificEnergy: number;
   readonly spin: number;
@@ -55,7 +56,7 @@ export function createParticle(props: CreateParticleProps): Particle {
 
   return {
     id: String(nextParticleId++),
-    stateVector: [radius, azimuthalAngle, radialVelocity] as [number, number, number],
+    stateVector: [radius, azimuthalAngle, radialVelocity] as StateVector,
     angularMomentum: angularMomentum,
     specificEnergy: specificEnergy,
     spin: spin,

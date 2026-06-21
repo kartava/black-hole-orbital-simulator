@@ -4,6 +4,12 @@
 import type { BlackHoleGeometry } from "./types";
 
 export const UNIT_MASS = 1;
+// SI physical constants.
+const REDUCED_PLANCK_CONSTANT = 1.054571817e-34; // J·s
+const SPEED_OF_LIGHT = 2.99792458e8; // m/s
+const GRAVITATIONAL_CONSTANT = 6.6743e-11; // m³/(kg·s²)
+const BOLTZMANN_CONSTANT = 1.380649e-23; // J/K
+const SOLAR_MASS_KG = 1.98892e30; // kg
 
 export function outerEventHorizonRadius(spin: number): number {
   return UNIT_MASS + Math.sqrt(UNIT_MASS * UNIT_MASS - spin * spin);
@@ -63,13 +69,6 @@ export function blackHoleGeometry(spin: number): BlackHoleGeometry {
     photonSphere: photonOrbitRadius({ spin: spin, prograde: true }),
   };
 }
-
-// SI physical constants, CODATA 2018.
-const REDUCED_PLANCK_CONSTANT = 1.054571817e-34; // J·s
-const SPEED_OF_LIGHT = 2.99792458e8; // m/s
-const GRAVITATIONAL_CONSTANT = 6.6743e-11; // m³/(kg·s²)
-const BOLTZMANN_CONSTANT = 1.380649e-23; // J/K
-const SOLAR_MASS_KG = 1.98892e30; // kg
 
 // Kerr Hawking temperature: T = ℏc³√(1−a²) / (4πGM k_B (1+√(1−a²)))
 // At spin=0 this reduces to the Schwarzschild value ℏc³/(8πGMk_B).

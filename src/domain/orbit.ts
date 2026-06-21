@@ -1,5 +1,6 @@
 import { UNIT_MASS, outerEventHorizonRadius } from "./black-hole";
-import type { OrbitParameters } from "./types";
+import type { OrbitParameters, StateVector } from "./types";
+
 // State vector: [radius, azimuthalAngle, radialVelocity] = [r, φ, dr/dτ]
 // Returns [dr/dτ, dφ/dτ, d²r/dτ²].
 // Derived from Boyer-Lindquist metric: (dr/dτ)² = R/r⁴,
@@ -9,7 +10,7 @@ function kerrDerivatives(props: {
   angularMomentum: number;
   specificEnergy: number;
   spin: number;
-}): [number, number, number] {
+}): StateVector {
   const { stateVector, angularMomentum, specificEnergy, spin } = props;
   const [radius, , radialVelocity] = stateVector;
   if (radius <= 0) return [0, 0, 0];
@@ -46,12 +47,12 @@ function kerrDerivatives(props: {
 }
 
 export function rungeKutta4Step(props: {
-  stateVector: readonly [number, number, number];
+  stateVector: StateVector;
   angularMomentum: number;
   specificEnergy: number;
   spin: number;
   timeStep: number;
-}): [number, number, number] {
+}): StateVector {
   const { stateVector, angularMomentum, specificEnergy, spin, timeStep } =
     props;
   const computeDerivatives = (currentState: readonly number[]) =>
@@ -79,7 +80,7 @@ export function rungeKutta4Step(props: {
       component +
       (timeStep / 6) *
         (slope1[index] + 2 * slope2[index] + 2 * slope3[index] + slope4[index]),
-  ) as [number, number, number];
+  ) as unknown as StateVector;
 }
 
 // ṫ = [(r²+a²+2Ma²/r)·E − (2Ma/r)·L] / Δ — equatorial Kerr (Boyer-Lindquist).
@@ -158,7 +159,11 @@ export function circularOrbitParameters(props: {
     ? angularMomentumMagnitude
     : -angularMomentumMagnitude;
 
-  return { angularMomentum: angularMomentum, specificEnergy: specificEnergy, radialVelocity: 0 };
+  return {
+    angularMomentum: angularMomentum,
+    specificEnergy: specificEnergy,
+    radialVelocity: 0,
+  };
 }
 
 // Schwarzschild: V²(r) = (1−2M/r)(1+L²/r²), independent of E.
@@ -226,5 +231,9 @@ export function orbitParametersFromInitialConditions(props: {
     (-quadraticCoeffB + Math.sqrt(discriminant)) / (2 * quadraticCoeffA);
   if (specificEnergy <= 0) return null;
 
-  return { angularMomentum: angularMomentum, specificEnergy: specificEnergy, radialVelocity: radialVelocity };
+  return {
+    angularMomentum: angularMomentum,
+    specificEnergy: specificEnergy,
+    radialVelocity: radialVelocity,
+  };
 }

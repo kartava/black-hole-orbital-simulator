@@ -1,5 +1,7 @@
+import type { StateVector } from "../domain/types";
+
 export interface IntegrateProps {
-  stateVector: readonly [number, number, number];
+  stateVector: StateVector;
   angularMomentum: number;
   specificEnergy: number;
   spin: number;
@@ -7,5 +9,5 @@ export interface IntegrateProps {
 }
 
 export interface PhysicsIntegrator {
-  integrate(props: IntegrateProps): [number, number, number];
+  integrate(props: IntegrateProps): StateVector;
 }
