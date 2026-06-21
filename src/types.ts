@@ -1,31 +1,17 @@
-import type { Particle } from "./particles";
-
 export interface Camera {
-  scale: number;
+  readonly scale: number;
 }
 
 export interface DisplayOptions {
-  showISCO: boolean;
-  showPhotonSphere: boolean;
-  showEffectivePotential: boolean;
-  showTimeDilationPanel: boolean;
-  showTidalStretching: boolean;
+  readonly showISCO: boolean;
+  readonly showPhotonSphere: boolean;
+  readonly showEffectivePotential: boolean;
+  readonly showTimeDilationPanel: boolean;
+  readonly showTidalStretching: boolean;
 }
 
 export interface SpawnState {
-  initialRadius: number;
-  angularMomentum: number;
-  radialVelocity: number;
-}
-
-export interface SimulationState {
-  particles: Particle[];
-  selectedParticle: Particle | null;
-  paused: boolean;
-  simulationSpeed: number;
-  solarMasses: number;
-  spin: number;
-  camera: Camera;
-  spawn: SpawnState;
-  options: DisplayOptions;
+  readonly initialRadius: number;
+  readonly angularMomentum: number;
+  readonly radialVelocity: number;
 }

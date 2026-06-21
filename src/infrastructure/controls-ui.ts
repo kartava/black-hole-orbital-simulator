@@ -1,13 +1,21 @@
-import { Particle, createColorCycler } from "./particles";
+import {
+  createParticle,
+  createColorCycler,
+  particleRadius,
+  getCoordinateTimeRate,
+} from "../domain/particle";
+import type { Particle } from "../domain/particle";
 import {
   circularOrbitParameters,
   orbitParametersFromInitialConditions,
+} from "../domain/orbit";
+import {
   hawkingTemperature,
   schwarzschildRadiusInKilometers,
   blackHoleGeometry,
   type BlackHoleGeometry,
-} from "./physics";
-import type { SimulationState } from "./types";
+} from "../domain/black-hole";
+import type { SimulationState } from "../application/simulation-state";
 
 type ParticleBlueprint = {
   radius: number;
@@ -228,9 +236,10 @@ function formatTemperature(temperature: number): string {
 
 export function buildControls(props: {
   container: HTMLElement;
-  state: SimulationState;
+  getState: () => SimulationState;
+  setState: (newState: SimulationState) => void;
 }): () => void {
-  const { container, state } = props;
+  const { container, getState, setState } = props;
   const getNextColor = createColorCycler();
 
   container.innerHTML = `
@@ -291,12 +300,16 @@ export function buildControls(props: {
   };
 
   function syncAngularMomentumToCircularOrbit(): void {
+    const s = getState();
     const params = circularOrbitParameters({
-      orbitalRadius: state.spawn.initialRadius,
-      spin: state.spin,
+      orbitalRadius: s.spawn.initialRadius,
+      spin: s.spin,
     });
     if (!params) return;
-    state.spawn.angularMomentum = params.angularMomentum;
+    setState({
+      ...s,
+      spawn: { ...s.spawn, angularMomentum: params.angularMomentum },
+    });
     setDisplayText("angular-momentum-value", params.angularMomentum.toFixed(2));
     const slider = document.getElementById(
       "angular-momentum-slider",
@@ -307,7 +320,7 @@ export function buildControls(props: {
   function updateBlackHoleReadouts(): void {
     const el = document.getElementById("black-hole-readouts");
     if (!el) return;
-    const { spin, solarMasses } = state;
+    const { spin, solarMasses } = getState();
     const rsKm = schwarzschildRadiusInKilometers(solarMasses);
     const temp = hawkingTemperature({ solarMasses, spin });
     const { horizon, iscoPrograde, iscoRetrograde } = blackHoleGeometry(spin);
@@ -320,65 +333,83 @@ export function buildControls(props: {
   }
 
   function addCustomParticle(): void {
+    const s = getState();
     const params = orbitParametersFromInitialConditions({
-      radius: state.spawn.initialRadius,
-      angularMomentum: state.spawn.angularMomentum,
-      radialVelocity: state.spawn.radialVelocity,
-      spin: state.spin,
+      radius: s.spawn.initialRadius,
+      angularMomentum: s.spawn.angularMomentum,
+      radialVelocity: s.spawn.radialVelocity,
+      spin: s.spin,
     });
     if (!params) return;
-    const particle = new Particle({
-      radius: state.spawn.initialRadius,
+    const particle = createParticle({
+      radius: s.spawn.initialRadius,
       azimuthalAngle: 0,
       ...params,
-      spin: state.spin,
+      spin: s.spin,
       color: getNextColor(),
       label: "custom",
     });
-    state.particles.push(particle);
-    state.selectedParticle = particle;
+    setState({
+      ...s,
+      particles: [...s.particles, particle],
+      selectedParticleId: particle.id,
+    });
   }
 
   function addPreset(presetId: string): void {
+    const s = getState();
     const preset = PRESETS.find((p) => p.id === presetId);
     if (!preset) return;
-    const geometry = blackHoleGeometry(state.spin);
-    const blueprint = preset.build({ geometry, spin: state.spin });
+    const geometry = blackHoleGeometry(s.spin);
+    const blueprint = preset.build({ geometry, spin: s.spin });
     if (!blueprint) return;
-    const particle = new Particle({ ...blueprint, color: getNextColor() });
-    state.particles.push(particle);
-    state.selectedParticle = particle;
+    const particle = createParticle({ ...blueprint, color: getNextColor() });
+    setState({
+      ...s,
+      particles: [...s.particles, particle],
+      selectedParticleId: particle.id,
+    });
   }
 
   getElement("mass-slider").addEventListener("input", (e) => {
-    state.solarMasses = +(e.target as HTMLInputElement).value;
-    setDisplayText("mass-value", String(state.solarMasses));
+    const solarMasses = +(e.target as HTMLInputElement).value;
+    setState({ ...getState(), solarMasses });
+    setDisplayText("mass-value", String(solarMasses));
     updateBlackHoleReadouts();
   });
 
   getElement("spin-slider").addEventListener("input", (e) => {
-    state.spin = +(e.target as HTMLInputElement).value;
-    setDisplayText("spin-value", state.spin.toFixed(2));
+    const spin = +(e.target as HTMLInputElement).value;
+    setState({ ...getState(), spin });
+    setDisplayText("spin-value", spin.toFixed(2));
     updateBlackHoleReadouts();
   });
 
   getElement("initial-radius-slider").addEventListener("input", (e) => {
-    state.spawn.initialRadius = +(e.target as HTMLInputElement).value;
-    setDisplayText(
-      "initial-radius-value",
-      state.spawn.initialRadius.toFixed(1),
-    );
+    const initialRadius = +(e.target as HTMLInputElement).value;
+    setState({
+      ...getState(),
+      spawn: { ...getState().spawn, initialRadius },
+    });
+    setDisplayText("initial-radius-value", initialRadius.toFixed(1));
     syncAngularMomentumToCircularOrbit();
   });
+
   getElement("angular-momentum-slider").addEventListener("input", (e) => {
-    state.spawn.angularMomentum = +(e.target as HTMLInputElement).value;
-    setDisplayText(
-      "angular-momentum-value",
-      state.spawn.angularMomentum.toFixed(2),
-    );
+    const angularMomentum = +(e.target as HTMLInputElement).value;
+    setState({
+      ...getState(),
+      spawn: { ...getState().spawn, angularMomentum },
+    });
+    setDisplayText("angular-momentum-value", angularMomentum.toFixed(2));
   });
+
   getElement("radial-velocity-slider").addEventListener("input", (e) => {
-    state.spawn.radialVelocity = +(e.target as HTMLInputElement).value;
+    const radialVelocity = +(e.target as HTMLInputElement).value;
+    setState({
+      ...getState(),
+      spawn: { ...getState().spawn, radialVelocity },
+    });
     setDisplayText(
       "radial-velocity-value",
       (e.target as HTMLInputElement).value,
@@ -386,17 +417,20 @@ export function buildControls(props: {
   });
 
   getElement("speed-slider").addEventListener("input", (e) => {
-    state.simulationSpeed = +(e.target as HTMLInputElement).value;
+    const simulationSpeed = +(e.target as HTMLInputElement).value;
+    setState({ ...getState(), simulationSpeed });
     setDisplayText("speed-value", (e.target as HTMLInputElement).value + "×");
   });
 
   getElement("pause-button").addEventListener("click", () => {
-    state.paused = !state.paused;
-    getElement("pause-button").textContent = state.paused ? "Resume" : "Pause";
+    const s = getState();
+    const paused = !s.paused;
+    setState({ ...s, paused });
+    getElement("pause-button").textContent = paused ? "Resume" : "Pause";
   });
+
   getElement("clear-particles-button").addEventListener("click", () => {
-    state.particles.length = 0;
-    state.selectedParticle = null;
+    setState({ ...getState(), particles: [], selectedParticleId: null });
   });
 
   getElement("add-particle-button").addEventListener(
@@ -411,55 +445,89 @@ export function buildControls(props: {
   });
 
   getElement("toggle-isco").addEventListener("change", (e) => {
-    state.options.showISCO = (e.target as HTMLInputElement).checked;
+    const s = getState();
+    setState({
+      ...s,
+      options: {
+        ...s.options,
+        showISCO: (e.target as HTMLInputElement).checked,
+      },
+    });
   });
   getElement("toggle-photon-sphere").addEventListener("change", (e) => {
-    state.options.showPhotonSphere = (e.target as HTMLInputElement).checked;
+    const s = getState();
+    setState({
+      ...s,
+      options: {
+        ...s.options,
+        showPhotonSphere: (e.target as HTMLInputElement).checked,
+      },
+    });
   });
   getElement("toggle-effective-potential").addEventListener("change", (e) => {
-    state.options.showEffectivePotential = (
-      e.target as HTMLInputElement
-    ).checked;
+    const s = getState();
+    setState({
+      ...s,
+      options: {
+        ...s.options,
+        showEffectivePotential: (e.target as HTMLInputElement).checked,
+      },
+    });
   });
   getElement("toggle-time-dilation").addEventListener("change", (e) => {
-    state.options.showTimeDilationPanel = (
-      e.target as HTMLInputElement
-    ).checked;
+    const s = getState();
+    setState({
+      ...s,
+      options: {
+        ...s.options,
+        showTimeDilationPanel: (e.target as HTMLInputElement).checked,
+      },
+    });
   });
   getElement("toggle-tidal-stretching").addEventListener("change", (e) => {
-    state.options.showTidalStretching = (e.target as HTMLInputElement).checked;
+    const s = getState();
+    setState({
+      ...s,
+      options: {
+        ...s.options,
+        showTidalStretching: (e.target as HTMLInputElement).checked,
+      },
+    });
   });
 
   updateBlackHoleReadouts();
   syncAngularMomentumToCircularOrbit();
 
   const particleReadoutsEl = getElement("particle-readouts");
-  let lastTrackedParticle: Particle | null = null;
+  let lastTrackedParticleId: string | null = null;
   let readoutCells: ReadoutCells | null = null;
 
   return function updateParticleReadouts(): void {
-    const particle = state.selectedParticle;
+    const s = getState();
+    const particle: Particle | null = s.selectedParticleId
+      ? (s.particles.find((p) => p.id === s.selectedParticleId) ?? null)
+      : null;
 
     if (!particle) {
-      if (lastTrackedParticle !== null) {
+      if (lastTrackedParticleId !== null) {
         particleReadoutsEl.innerHTML =
           '<span class="status-hint">Click a particle or add one</span>';
-        lastTrackedParticle = null;
+        lastTrackedParticleId = null;
         readoutCells = null;
       }
       return;
     }
 
     if (!particle.alive) {
-      if (lastTrackedParticle !== particle) {
+      if (lastTrackedParticleId !== particle.id) {
         particleReadoutsEl.innerHTML = `<span class="status-alert">${particle.captured ? "Captured by BH" : "Escaped to infinity"}</span>`;
-        lastTrackedParticle = particle;
+        lastTrackedParticleId = particle.id;
         readoutCells = null;
       }
       return;
     }
 
-    if (lastTrackedParticle !== particle) {
+    if (lastTrackedParticleId !== particle.id) {
       particleReadoutsEl.innerHTML = "";
       const labelDiv = document.createElement("div");
       const labelKey = document.createElement("span");
@@ -497,12 +565,12 @@ export function buildControls(props: {
           labelText: "t coord",
         }),
       };
-      lastTrackedParticle = particle;
+      lastTrackedParticleId = particle.id;
     }
 
     const cells = readoutCells!;
-    const rate = particle.coordinateTimeRate;
-    cells.radius.textContent = `${particle.radius.toFixed(3)} M`;
+    const rate = getCoordinateTimeRate(particle);
+    cells.radius.textContent = `${particleRadius(particle).toFixed(3)} M`;
     cells.angularMomentum.textContent = `${particle.angularMomentum.toFixed(3)} M`;
     cells.energy.textContent = particle.specificEnergy.toFixed(4);
     cells.dilationNow.textContent = (1 / rate).toFixed(5);
