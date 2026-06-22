@@ -11,7 +11,13 @@
     "moduleDetection": "force",
     "noEmit": true,
     "strict": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "paths": {
+      "@domain/*": ["./src/domain/*"],
+      "@application/*": ["./src/application/*"],
+      "@infrastructure/*": ["./src/infrastructure/*"],
+      "@src/*": ["./src/*"]
+    }
   },
   "include": ["src"]
 }

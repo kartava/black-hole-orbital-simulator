@@ -134,25 +134,61 @@ yarn build
 
 Output goes to `dist/` and can be served by any static file host.
 
+### Testing & checks
+
+```bash
+yarn typecheck    # tsc --noEmit
+yarn test         # vitest unit tests (domain + application)
+yarn test:e2e     # playwright end-to-end tests (needs a browser)
+yarn format:check # oxfmt formatting check
+```
+
+CI runs typecheck, format check, unit tests, build, and e2e on every pull request; the deploy workflow re-runs the same gates before publishing to GitHub Pages.
+
 ## Project Structure
+
+The codebase follows a DDD/Hexagonal (Ports & Adapters) architecture. The domain layer is pure TypeScript with no dependencies; infrastructure adapters plug in at the composition root. The layer names are an intentionally illustrative hexagonal skeleton — the "domain" is a pure-physics function library, and the one port that earns its keep (`PhysicsIntegrator`) makes the integration scheme swappable and the engine unit-testable with a fake.
 
 ```
 src/
-  physics.ts    — Pure GR math: Kerr geodesics, orbit parameters, horizon/ISCO/photon radii, Hawking temperature
-  particles.ts  — Particle class (RK4 integration, trail, proper/coordinate time), color cycler
-  controls.ts   — Sidebar: preset table, sliders, event wiring, returns per-frame readout updater
-  renderer.ts   — Canvas 2D: starfield, accretion disk, rings, labels, V²(r) and time dilation panels
-  types.ts      — Shared interfaces (SimulationState, Camera, DisplayOptions, SpawnState)
-  main.ts       — Entry point: state, animation loop, resize, input events
-  assets/
-    styles.css  — UI styles
+├── domain/
+│   ├── constants.ts      UNIT_MASS (geometric units) + SI physical constants (ℏ, c, G, k_B, solar mass)
+│   ├── black-hole.ts     Pure GR geometry: horizon, ISCO, photon orbit, Hawking temperature, SI conversions
+│   ├── orbit.ts          Orbital mechanics: geodesicDerivative (Kerr equations of motion), circular orbit params, effective potential, tidal factor
+│   ├── particle.ts       Particle interface, createParticle() (injected id), createParticleIdSequence(), helpers, color cycler
+│   └── types.ts          Domain-only types: StateVector, BlackHoleGeometry, OrbitParameters
+│
+├── application/
+│   ├── simulation-engine.ts  SimulationEngine class — step() returns a new immutable SimulationState; createInitialSimulationState()
+│   └── integrator.ts         PhysicsIntegrator port interface (implemented by infrastructure)
+│
+├── infrastructure/
+│   ├── renderer/
+│   │   ├── canvas-renderer.ts  createRenderer() factory → { render, resize }; thin orchestrator owning draw order
+│   │   ├── backdrop.ts         Space backdrop + star field
+│   │   ├── overlays.ts         Accretion disk, horizon glow, event-horizon disk, orbit rings, ergosphere, labels
+│   │   ├── particles.ts        Particle trails, bodies, tidal ellipses, selection halos
+│   │   └── panels.ts           Effective potential V²(r) and time dilation panels
+│   ├── rk4-integrator.ts   Rk4Integrator — implements PhysicsIntegrator; owns the 4th-order RK4 march, calls domain geodesicDerivative
+│   ├── input-adapter.ts    Canvas + document input events (click, wheel, touch, keyboard)
+│   └── controls-ui.ts      Sidebar DOM (markup / wiring / readout updater); wired via getSim/setSim/getView/setView
+│
+├── types.ts      Shared UI types: Camera, DisplayOptions, SpawnState, ViewState + createInitialViewState()
+├── camera.ts     worldToScreen / screenToWorld — the single world↔screen transform
+├── dom.ts        requireElement() — typed getElementById that throws a named error
+├── colors.ts     Named color constants for the renderer
+├── main.ts       Composition root: wires all layers, holds sim + view state, owns DOM events and animation loop
+└── assets/
+    styles.css    UI styles
 ```
 
 ## Tech Stack
 
 - **Vite** — dev server and bundler
-- TypeScript (no framework)
-- HTML5 Canvas 2D
+- **TypeScript** (strict mode, no framework)
+- **HTML5 Canvas 2D**
+- **Vitest** — unit tests for the domain physics + application engine
+- **Playwright** — end-to-end UI tests
 
 ## License
 

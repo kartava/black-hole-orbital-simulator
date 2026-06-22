@@ -1,31 +1,40 @@
-import type { Particle } from "./particles";
-
 export interface Camera {
-  scale: number;
+  readonly scale: number;
 }
 
 export interface DisplayOptions {
-  showISCO: boolean;
-  showPhotonSphere: boolean;
-  showEffectivePotential: boolean;
-  showTimeDilationPanel: boolean;
-  showTidalStretching: boolean;
+  readonly showISCO: boolean;
+  readonly showPhotonSphere: boolean;
+  readonly showEffectivePotential: boolean;
+  readonly showTimeDilationPanel: boolean;
+  readonly showTidalStretching: boolean;
 }
 
 export interface SpawnState {
-  initialRadius: number;
-  angularMomentum: number;
-  radialVelocity: number;
+  readonly initialRadius: number;
+  readonly angularMomentum: number;
+  readonly radialVelocity: number;
 }
 
-export interface SimulationState {
-  particles: Particle[];
-  selectedParticle: Particle | null;
-  paused: boolean;
-  simulationSpeed: number;
-  solarMasses: number;
-  spin: number;
-  camera: Camera;
-  spawn: SpawnState;
-  options: DisplayOptions;
+// Presentation/interaction state, held alongside SimulationState by the
+// composition root. Kept out of the application layer so the engine never
+// depends on rendering or UI-form concerns.
+export interface ViewState {
+  readonly camera: Camera;
+  readonly options: DisplayOptions;
+  readonly spawn: SpawnState;
+}
+
+export function createInitialViewState(): ViewState {
+  return {
+    camera: { scale: 28 },
+    options: {
+      showISCO: true,
+      showPhotonSphere: true,
+      showEffectivePotential: true,
+      showTimeDilationPanel: true,
+      showTidalStretching: false,
+    },
+    spawn: { initialRadius: 10, angularMomentum: 3.46, radialVelocity: 0 },
+  };
 }
