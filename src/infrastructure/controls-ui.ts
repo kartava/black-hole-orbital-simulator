@@ -1,3 +1,11 @@
+import type { Particle } from "@domain/particle";
+import type { BlackHoleGeometry } from "@domain/types";
+
+import type { DisplayOptions, ViewState } from "@src/types";
+import type { SimulationState } from "@application/simulation-engine";
+
+import { requireElement } from "@src/dom";
+
 import {
   ParticleStatus,
   createParticle,
@@ -5,21 +13,16 @@ import {
   createParticleIdSequence,
   particleRadius,
   getCoordinateTimeRate,
-} from "../domain/particle";
-import type { Particle } from "../domain/particle";
+} from "@domain/particle";
 import {
   circularOrbitParameters,
   orbitParametersFromInitialConditions,
-} from "../domain/orbit";
+} from "@domain/orbit";
 import {
   hawkingTemperature,
   schwarzschildRadiusInKilometers,
   blackHoleGeometry,
-} from "../domain/black-hole";
-import type { BlackHoleGeometry } from "../domain/types";
-import type { SimulationState } from "../application/simulation-engine";
-import type { DisplayOptions, ViewState } from "../types";
-import { requireElement } from "../dom";
+} from "@domain/black-hole";
 
 type ParticleBlueprint = {
   radius: number;

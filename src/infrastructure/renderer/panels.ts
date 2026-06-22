@@ -1,8 +1,9 @@
-import { ParticleStatus } from "../../domain/particle";
-import type { Particle } from "../../domain/particle";
-import { particleRadius, getCoordinateTimeRate } from "../../domain/particle";
-import { effectivePotential } from "../../domain/orbit";
-import { PANEL_BG, PANEL_BORDER, TEXT_SECONDARY } from "../../colors";
+import { ParticleStatus } from "@domain/particle";
+import type { Particle } from "@domain/particle";
+
+import { effectivePotential } from "@domain/orbit";
+import { PANEL_BG, PANEL_BORDER, TEXT_SECONDARY } from "@src/colors";
+import { particleRadius, getCoordinateTimeRate } from "@domain/particle";
 
 export function drawEffectivePotentialPanel(props: {
   context: CanvasRenderingContext2D;

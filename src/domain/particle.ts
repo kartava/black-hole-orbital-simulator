@@ -1,5 +1,6 @@
-import { coordinateTimeRate } from "./orbit";
-import type { StateVector } from "./types";
+import type { StateVector } from "@domain/types";
+
+import { coordinateTimeRate } from "@domain/orbit";
 
 export const ParticleStatus = {
   ALIVE: "alive",

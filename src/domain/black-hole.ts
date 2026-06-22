@@ -1,4 +1,3 @@
-import type { BlackHoleGeometry } from "./types";
 import {
   UNIT_MASS,
   REDUCED_PLANCK_CONSTANT,
@@ -6,7 +5,8 @@ import {
   GRAVITATIONAL_CONSTANT,
   BOLTZMANN_CONSTANT,
   SOLAR_MASS_KG,
-} from "./constants";
+} from "@domain/constants";
+import type { BlackHoleGeometry } from "@domain/types";
 
 export function outerEventHorizonRadius(spin: number): number {
   return UNIT_MASS + Math.sqrt(UNIT_MASS * UNIT_MASS - spin * spin);

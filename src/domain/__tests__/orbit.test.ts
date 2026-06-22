@@ -5,7 +5,7 @@ import {
   effectivePotential,
   tidalStretchFactor,
   orbitParametersFromInitialConditions,
-} from "../orbit";
+} from "@domain/orbit";
 
 describe("effectivePotential (Schwarzschild)", () => {
   it("approaches 1 as r → ∞ for L=0", () => {

@@ -1,9 +1,10 @@
 import type {
   IntegrateProps,
   PhysicsIntegrator,
-} from "../application/integrator";
-import type { StateVector } from "../domain/types";
-import { geodesicDerivative } from "../domain/orbit";
+} from "@application/integrator";
+
+import type { StateVector } from "@domain/types";
+import { geodesicDerivative } from "@domain/orbit";
 
 // Classical 4th-order Runge-Kutta march of the geodesic ODE. The physics (the
 // derivative) lives in the domain; this adapter owns only the numerical scheme,

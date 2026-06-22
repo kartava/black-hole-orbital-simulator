@@ -4,7 +4,7 @@ import {
   COLOR_ISCO_RETROGRADE,
   COLOR_PHOTON_SPHERE,
   TEXT_SECONDARY,
-} from "../../colors";
+} from "@src/colors";
 
 export function drawAccretionDisk(props: {
   context: CanvasRenderingContext2D;

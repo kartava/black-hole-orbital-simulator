@@ -1,7 +1,8 @@
-import { ParticleStatus, particleX, particleY } from "../../domain/particle";
-import type { Particle } from "../../domain/particle";
-import { tidalStretchFactor } from "../../domain/orbit";
-import type { DisplayOptions } from "../../types";
+import type { Particle } from "@domain/particle";
+import type { DisplayOptions } from "@src/types";
+
+import { tidalStretchFactor } from "@domain/orbit";
+import { ParticleStatus, particleX, particleY } from "@domain/particle";
 
 export function drawParticles(props: {
   context: CanvasRenderingContext2D;

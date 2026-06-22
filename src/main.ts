@@ -1,15 +1,17 @@
-import "./assets/styles.css";
-import "./assets/mobile.css";
+import "@src/assets/styles.css";
+import "@src/assets/mobile.css";
+
+import { requireElement } from "@src/dom";
+import { createInitialViewState } from "@src/types";
+
 import {
   SimulationEngine,
   createInitialSimulationState,
-} from "./application/simulation-engine";
-import { Rk4Integrator } from "./infrastructure/rk4-integrator";
-import { createRenderer } from "./infrastructure/renderer/canvas-renderer";
-import { buildControls } from "./infrastructure/controls-ui";
-import { buildInputAdapter } from "./infrastructure/input-adapter";
-import { createInitialViewState } from "./types";
-import { requireElement } from "./dom";
+} from "@application/simulation-engine";
+import { buildControls } from "@infrastructure/controls-ui";
+import { Rk4Integrator } from "@infrastructure/rk4-integrator";
+import { buildInputAdapter } from "@infrastructure/input-adapter";
+import { createRenderer } from "@infrastructure/renderer/canvas-renderer";
 
 const canvas = requireElement<HTMLCanvasElement>("canvas");
 const canvasContext = canvas.getContext("2d");

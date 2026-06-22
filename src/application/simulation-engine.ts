@@ -1,9 +1,10 @@
-import type { PhysicsIntegrator } from "./integrator";
-import { coordinateTimeRate } from "../domain/orbit";
-import { outerEventHorizonRadius } from "../domain/black-hole";
-import { ParticleStatus } from "../domain/particle";
-import type { Particle, TrailPoint } from "../domain/particle";
-import type { StateVector } from "../domain/types";
+import type { StateVector } from "@domain/types";
+import type { Particle, TrailPoint } from "@domain/particle";
+import type { PhysicsIntegrator } from "@application/integrator";
+
+import { ParticleStatus } from "@domain/particle";
+import { coordinateTimeRate } from "@domain/orbit";
+import { outerEventHorizonRadius } from "@domain/black-hole";
 
 // Physics/session state only. Presentation concerns (camera, display toggles,
 // the particle-spawn form) live in ViewState — see src/types.ts — so the

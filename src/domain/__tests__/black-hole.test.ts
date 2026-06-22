@@ -6,7 +6,7 @@ import {
   photonOrbitRadius,
   blackHoleGeometry,
   hawkingTemperature,
-} from "../black-hole";
+} from "@domain/black-hole";
 
 describe("outerEventHorizonRadius", () => {
   it("returns 2M for Schwarzschild (spin=0)", () => {

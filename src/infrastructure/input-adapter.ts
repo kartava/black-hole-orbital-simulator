@@ -1,8 +1,10 @@
-import { ParticleStatus, particleX, particleY } from "../domain/particle";
-import type { Particle } from "../domain/particle";
-import type { SimulationState } from "../application/simulation-engine";
-import type { ViewState } from "../types";
-import { screenToWorld } from "../camera";
+import type { ViewState } from "@src/types";
+import type { Particle } from "@domain/particle";
+import type { SimulationState } from "@application/simulation-engine";
+
+import { screenToWorld } from "@src/camera";
+
+import { ParticleStatus, particleX, particleY } from "@domain/particle";
 
 const MIN_CAMERA_SCALE = 5;
 const MAX_CAMERA_SCALE = 200;

@@ -1,10 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { Rk4Integrator } from "../rk4-integrator";
-import {
-  circularOrbitParameters,
-  effectivePotential,
-} from "../../domain/orbit";
-import type { StateVector } from "../../domain/types";
+
+import type { StateVector } from "@domain/types";
+
+import { Rk4Integrator } from "@infrastructure/rk4-integrator";
+import { circularOrbitParameters, effectivePotential } from "@domain/orbit";
 
 // Energy conservation exercises the geodesic derivative (domain) and the RK4
 // march (this adapter) together, so the test lives alongside the integrator.

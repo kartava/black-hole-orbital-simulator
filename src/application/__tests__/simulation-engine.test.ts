@@ -1,9 +1,18 @@
 import { describe, it, expect } from "vitest";
-import { SimulationEngine, type SimulationState } from "../simulation-engine";
-import type { IntegrateProps, PhysicsIntegrator } from "../integrator";
-import { createParticle, ParticleStatus } from "../../domain/particle";
-import type { Particle } from "../../domain/particle";
-import type { StateVector } from "../../domain/types";
+
+import type {
+  IntegrateProps,
+  PhysicsIntegrator,
+} from "@application/integrator";
+import type { StateVector } from "@domain/types";
+import type { Particle } from "@domain/particle";
+
+import {
+  SimulationEngine,
+  type SimulationState,
+} from "@application/simulation-engine";
+
+import { createParticle, ParticleStatus } from "@domain/particle";
 
 // Fake integrator that advances radius by a fixed amount each substep, so the
 // engine's capture/escape orchestration can be tested without any GR math.

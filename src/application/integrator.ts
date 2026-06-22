@@ -1,4 +1,4 @@
-import type { StateVector } from "../domain/types";
+import type { StateVector } from "@domain/types";
 
 export interface IntegrateProps {
   stateVector: StateVector;

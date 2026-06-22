@@ -1,6 +1,7 @@
-import { outerEventHorizonRadius } from "./black-hole";
-import { UNIT_MASS } from "./constants";
-import type { OrbitParameters, StateVector } from "./types";
+import type { OrbitParameters, StateVector } from "@domain/types";
+
+import { UNIT_MASS } from "@domain/constants";
+import { outerEventHorizonRadius } from "@domain/black-hole";
 
 // Right-hand side of the equatorial Kerr geodesic ODE — the physics the
 // numerical integrator marches forward (RK4 lives in the integrator adapter).

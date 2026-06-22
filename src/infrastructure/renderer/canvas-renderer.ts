@@ -1,17 +1,27 @@
-import type { Particle } from "../../domain/particle";
-import { blackHoleGeometry } from "../../domain/black-hole";
-import type { Camera, DisplayOptions } from "../../types";
-import { worldToScreen } from "../../camera";
+import type { Particle } from "@domain/particle";
+
+import { worldToScreen } from "@src/camera";
+import type { Camera, DisplayOptions } from "@src/types";
+
+import type { Star } from "@infrastructure/renderer/backdrop";
+
 import {
   drawAccretionDisk,
   drawHorizonGlow,
   drawOrbitRings,
   drawEventHorizonDisk,
-} from "./overlays";
-import { drawEffectivePotentialPanel, drawTimeDilationPanel } from "./panels";
-import { drawParticles } from "./particles";
-import { generateStars, drawSpaceBackdrop } from "./backdrop";
-import type { Star } from "./backdrop";
+} from "@infrastructure/renderer/overlays";
+import {
+  drawEffectivePotentialPanel,
+  drawTimeDilationPanel,
+} from "@infrastructure/renderer/panels";
+import {
+  generateStars,
+  drawSpaceBackdrop,
+} from "@infrastructure/renderer/backdrop";
+import { drawParticles } from "@infrastructure/renderer/particles";
+
+import { blackHoleGeometry } from "@domain/black-hole";
 
 export interface RenderProps {
   context: CanvasRenderingContext2D;
